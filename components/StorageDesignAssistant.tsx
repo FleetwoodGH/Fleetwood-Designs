@@ -4,6 +4,8 @@ import { useState } from "react";
 import DecisionStep from "@/components/DecisionStep";
 import DimensionInputs from "@/components/DimensionInputs";
 import EqualGridInput from "@/components/EqualGridInput";
+import TrayNumberInput from "@/components/TrayNumberInput";
+import { ENGINEERING_LIMITS } from "@/lib/engineering/engineeringConstants";
 
 type BuildType = "box" | "system" | null;
 type TrayType = "open" | "lid" | "dividers" | null;
@@ -18,9 +20,6 @@ type DimensionTarget =
   | "compartment-inside"
   | "custom-tray-inside"
   | null;
-
-const MIN_GRID_SIZE = 1;
-const MAX_GRID_SIZE = 6;
 
 const MIN_WIDTH = 20;
 const MIN_DEPTH = 20;
@@ -159,6 +158,11 @@ export default function StorageDesignAssistant() {
   const [dimensionStrategy, setDimensionStrategy] =
     useState<DimensionStrategy>(null);
 
+  const [trayNumber, setTrayNumber] = useState(
+    ENGINEERING_LIMITS.trays.minimum,
+  );
+  const [trayNumberConfirmed, setTrayNumberConfirmed] = useState(false);
+
   const [rows, setRows] = useState(2);
   const [columns, setColumns] = useState(2);
   const [gridConfirmed, setGridConfirmed] = useState(false);
@@ -173,11 +177,14 @@ export default function StorageDesignAssistant() {
   const customGridSelected =
     trayType === "dividers" && dividerLayout === "custom";
 
+  const trayConfigurationComplete =
+    buildType === "system" && trayType !== null && trayNumberConfirmed;
+
   const designPhaseComplete =
     buildType === "box" ||
-    (buildType === "system" && trayType !== null && trayType !== "dividers") ||
-    customGridSelected ||
-    (equalGridSelected && gridConfirmed);
+    (trayConfigurationComplete && trayType !== "dividers") ||
+    (trayConfigurationComplete && customGridSelected) ||
+    (trayConfigurationComplete && equalGridSelected && gridConfirmed);
 
   const requestedWidthValue =
     requestedWidth === "" ? null : Number(requestedWidth);
@@ -233,6 +240,13 @@ export default function StorageDesignAssistant() {
     resetDimensions();
   }
 
+  function resetTrayConfiguration() {
+    setTrayNumber(ENGINEERING_LIMITS.trays.minimum);
+    setTrayNumberConfirmed(false);
+    setDividerLayout(null);
+    resetGrid();
+  }
+
   function handleBuildTypeSelect(optionId: string) {
     if (optionId !== "box" && optionId !== "system") {
       return;
@@ -240,8 +254,7 @@ export default function StorageDesignAssistant() {
 
     setBuildType(optionId);
     setTrayType(null);
-    setDividerLayout(null);
-    resetGrid();
+    resetTrayConfiguration();
   }
 
   function handleTrayTypeSelect(optionId: string) {
@@ -250,6 +263,15 @@ export default function StorageDesignAssistant() {
     }
 
     setTrayType(optionId);
+    resetTrayConfiguration();
+  }
+
+  function handleTrayNumberChange(value: number) {
+    const minimum = ENGINEERING_LIMITS.trays.minimum;
+    const maximum = ENGINEERING_LIMITS.trays.maximum;
+
+    setTrayNumber(Math.min(maximum, Math.max(minimum, value)));
+    setTrayNumberConfirmed(false);
     setDividerLayout(null);
     resetGrid();
   }
@@ -273,13 +295,19 @@ export default function StorageDesignAssistant() {
   }
 
   function updateRows(value: number) {
-    setRows(Math.min(MAX_GRID_SIZE, Math.max(MIN_GRID_SIZE, value)));
+    const minimum = ENGINEERING_LIMITS.grid.minimumRows;
+    const maximum = ENGINEERING_LIMITS.grid.maximumRows;
+
+    setRows(Math.min(maximum, Math.max(minimum, value)));
     setGridConfirmed(false);
     resetDimensions();
   }
 
   function updateColumns(value: number) {
-    setColumns(Math.min(MAX_GRID_SIZE, Math.max(MIN_GRID_SIZE, value)));
+    const minimum = ENGINEERING_LIMITS.grid.minimumColumns;
+    const maximum = ENGINEERING_LIMITS.grid.maximumColumns;
+
+    setColumns(Math.min(maximum, Math.max(minimum, value)));
     setGridConfirmed(false);
     resetDimensions();
   }
@@ -342,16 +370,18 @@ export default function StorageDesignAssistant() {
         return "You will specify the total outside dimensions of the storage box. Its usable inside dimensions will be calculated automatically.";
 
       case "system-outside":
-        return "You will specify the total outside dimensions of the complete storage system. Tray, usable-space and compartment dimensions will be calculated automatically.";
+        return `You will specify the total outside dimensions of the complete storage system containing ${trayNumber} ${
+          trayNumber === 1 ? "tray" : "trays"
+        }. Tray, usable-space and compartment dimensions will be calculated automatically.`;
 
       case "box-inside":
         return "You will specify the usable inside dimensions required in the storage box. The outside dimensions will be calculated automatically.";
 
       case "tray-inside":
-        return "You will specify the usable dimensions required inside one tray. The tray and complete storage-system dimensions will be calculated automatically.";
+        return `You will specify the usable dimensions required inside one tray. The tray and complete ${trayNumber}-tray storage-system dimensions will be calculated automatically.`;
 
       case "compartment-inside":
-        return `You will specify the usable dimensions required for one compartment. The complete ${rows} × ${columns} grid, tray and storage-system dimensions will be calculated automatically.`;
+        return `You will specify the usable dimensions required for one compartment. The complete ${rows} × ${columns} grid, tray and ${trayNumber}-tray storage-system dimensions will be calculated automatically.`;
 
       case "custom-tray-inside":
         return "You will specify the usable dimensions required inside the tray. Custom divider positions will be configured separately.";
@@ -392,7 +422,7 @@ export default function StorageDesignAssistant() {
         return "Enter the maximum outside width, depth and height of the storage box.";
 
       case "system-outside":
-        return "Enter the maximum outside width, depth and height of the complete storage system.";
+        return `Enter the maximum outside width, depth and height of the complete ${trayNumber}-tray storage system.`;
 
       case "box-inside":
         return "Enter the usable width, depth and height required inside the storage box.";
@@ -536,7 +566,18 @@ export default function StorageDesignAssistant() {
         </section>
       )}
 
-      {trayType === "dividers" && (
+      {buildType === "system" && trayType && (
+        <TrayNumberInput
+          value={trayNumber}
+          min={ENGINEERING_LIMITS.trays.minimum}
+          max={ENGINEERING_LIMITS.trays.maximum}
+          confirmed={trayNumberConfirmed}
+          onChange={handleTrayNumberChange}
+          onConfirm={() => setTrayNumberConfirmed(true)}
+        />
+      )}
+
+      {trayType === "dividers" && trayNumberConfirmed && (
         <DecisionStep
           question="How would you like to organise the compartments?"
           options={dividerLayoutOptions}
@@ -545,25 +586,26 @@ export default function StorageDesignAssistant() {
         />
       )}
 
-      {trayType && trayType !== "dividers" && (
+      {trayType && trayType !== "dividers" && trayNumberConfirmed && (
         <section className="rounded-xl border border-neutral-200 bg-neutral-50 p-6">
           <h2 className="text-lg font-semibold text-neutral-900">
-            Tray type selected
+            Tray configuration complete
           </h2>
 
           <p className="mt-2 text-neutral-600">
-            Continue below to determine whether the overall outside size or the
-            required usable tray space should lead the design.
+            The storage system will contain {trayNumber}{" "}
+            {trayNumber === 1 ? "tray" : "trays"}. Continue below to configure
+            the dimensions.
           </p>
         </section>
       )}
 
-      {equalGridSelected && (
+      {equalGridSelected && trayNumberConfirmed && (
         <EqualGridInput
           rows={rows}
           columns={columns}
-          min={MIN_GRID_SIZE}
-          max={MAX_GRID_SIZE}
+          min={ENGINEERING_LIMITS.grid.minimumRows}
+          max={ENGINEERING_LIMITS.grid.maximumRows}
           confirmed={gridConfirmed}
           onRowsChange={updateRows}
           onColumnsChange={updateColumns}
@@ -571,7 +613,7 @@ export default function StorageDesignAssistant() {
         />
       )}
 
-      {customGridSelected && (
+      {customGridSelected && trayNumberConfirmed && (
         <section className="rounded-xl border border-neutral-200 bg-neutral-50 p-6">
           <h2 className="text-lg font-semibold text-neutral-900">
             Custom layout selected
@@ -584,14 +626,14 @@ export default function StorageDesignAssistant() {
         </section>
       )}
 
-      {gridConfirmed && equalGridSelected && (
+      {gridConfirmed && equalGridSelected && trayNumberConfirmed && (
         <section className="rounded-xl border border-neutral-200 bg-neutral-50 p-6">
           <h2 className="text-lg font-semibold text-neutral-900">
             Equal grid configured
           </h2>
 
           <p className="mt-2 text-neutral-600">
-            The tray will contain {rows} rows and {columns} columns, creating{" "}
+            Each tray will contain {rows} rows and {columns} columns, creating{" "}
             {rows * columns} equally sized compartments.
           </p>
         </section>
@@ -683,12 +725,23 @@ export default function StorageDesignAssistant() {
                 </div>
 
                 {buildType === "system" && (
-                  <div>
-                    <dt className="text-sm text-neutral-500">Tray type</dt>
-                    <dd className="font-medium text-neutral-900">
-                      {getTrayTypeLabel(trayType)}
-                    </dd>
-                  </div>
+                  <>
+                    <div>
+                      <dt className="text-sm text-neutral-500">Tray type</dt>
+                      <dd className="font-medium text-neutral-900">
+                        {getTrayTypeLabel(trayType)}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt className="text-sm text-neutral-500">
+                        Number of trays
+                      </dt>
+                      <dd className="font-medium text-neutral-900">
+                        {trayNumber}
+                      </dd>
+                    </div>
+                  </>
                 )}
 
                 {trayType === "dividers" && (
