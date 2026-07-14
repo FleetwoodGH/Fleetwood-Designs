@@ -20,6 +20,10 @@ export const ENGINEERING_CONSTANTS = {
   base: {
     topAllowance: 1,
   },
+
+  construction: {
+    hingeDepthClearancePerPart: 0.1,
+  },
 } as const;
 
 export const ENGINEERING_LIMITS = {
