@@ -3,6 +3,7 @@ import {
   calculateUsableSpaceLed,
 } from "@/lib/engineering/calculations";
 import { ENGINEERING_LIMITS } from "@/lib/engineering/engineeringConstants";
+import { generateMakerWorldParameters } from "@/lib/engineering/makerworld";
 import type {
   CalculationResult,
   OutsideLedStorageSystemCalculationInput,
@@ -36,6 +37,7 @@ const usableSpaceLedInput: UsableSpaceLedStorageSystemCalculationInput = {
 
 const outsideLedResult = calculateOutsideLed(outsideLedInput);
 const usableSpaceLedResult = calculateUsableSpaceLed(usableSpaceLedInput);
+const makerWorldParameters = generateMakerWorldParameters(outsideLedResult);
 
 function validateHeightResult(result: CalculationResult, testName: string) {
   if (!result.heights || !result.tray) {
@@ -70,6 +72,119 @@ function validateHeightResult(result: CalculationResult, testName: string) {
 
 validateHeightResult(outsideLedResult, "Outside-led height validation");
 validateHeightResult(usableSpaceLedResult, "Usable-space-led height validation");
+
+if (!outsideLedResult.heights || !outsideLedResult.dividers) {
+  throw new Error(
+    "MakerWorld mapping validation requires storage-system heights and dividers.",
+  );
+}
+
+const makerWorldSourceHeights = outsideLedResult.heights;
+const makerWorldSourceDividers = outsideLedResult.dividers;
+
+const makerWorldParameterByName = new Map(
+  makerWorldParameters.groups.flatMap((group) =>
+    group.parameters.map((parameter) => [parameter.name, parameter] as const),
+  ),
+);
+
+if (makerWorldParameterByName.size !== 21) {
+  throw new Error(
+    `MakerWorld mapping expected 21 editable parameters, received ${makerWorldParameterByName.size}.`,
+  );
+}
+
+function validateMakerWorldParameter(
+  name: string,
+  expectedValue: number,
+  expectedDisplayValue: string,
+) {
+  const parameter = makerWorldParameterByName.get(name);
+
+  if (!parameter) {
+    throw new Error(`MakerWorld mapping did not include ${name}.`);
+  }
+
+  if (
+    parameter.value !== expectedValue ||
+    parameter.displayValue !== expectedDisplayValue
+  ) {
+    throw new Error(
+      `MakerWorld mapping expected ${name} to equal ${expectedDisplayValue}, ` +
+        `received ${parameter.displayValue}.`,
+    );
+  }
+}
+
+validateMakerWorldParameter(
+  "boxWidth",
+  outsideLedResult.box.outsideWidth,
+  outsideLedResult.box.outsideWidth.toFixed(2),
+);
+validateMakerWorldParameter(
+  "boxDepth",
+  outsideLedResult.box.outsideDepth,
+  outsideLedResult.box.outsideDepth.toFixed(2),
+);
+validateMakerWorldParameter(
+  "lidHeight",
+  makerWorldSourceHeights.lidHeight,
+  makerWorldSourceHeights.lidHeight.toFixed(2),
+);
+validateMakerWorldParameter(
+  "trayHeight",
+  makerWorldSourceHeights.trayOutsideHeight,
+  makerWorldSourceHeights.trayOutsideHeight.toFixed(2),
+);
+validateMakerWorldParameter(
+  "trayNumber",
+  outsideLedResult.trayNumber,
+  outsideLedResult.trayNumber.toFixed(0),
+);
+
+makerWorldSourceDividers.verticalPositions.forEach((position, index) => {
+  const roundedPosition = Number(position.toFixed(3));
+
+  validateMakerWorldParameter(
+    `dividerV${index + 1}`,
+    roundedPosition,
+    roundedPosition.toFixed(3),
+  );
+});
+
+validateMakerWorldParameter("dividerV4", 0, "0.000");
+validateMakerWorldParameter("dividerV5", 0, "0.000");
+
+makerWorldSourceDividers.verticalToggles.forEach((toggle, index) => {
+  validateMakerWorldParameter(
+    `toggleV${index + 1}`,
+    toggle,
+    toggle.toFixed(0),
+  );
+});
+
+makerWorldSourceDividers.horizontalPositions.forEach((position, index) => {
+  const roundedPosition = Number(position.toFixed(3));
+
+  validateMakerWorldParameter(
+    `dividerH${index + 1}`,
+    roundedPosition,
+    roundedPosition.toFixed(3),
+  );
+});
+
+validateMakerWorldParameter("dividerH2", 0, "0.000");
+validateMakerWorldParameter("dividerH3", 0, "0.000");
+
+makerWorldSourceDividers.horizontalToggles
+  .slice(0, 3)
+  .forEach((toggle, index) => {
+    validateMakerWorldParameter(
+      `toggleH${index + 1}`,
+      toggle,
+      toggle.toFixed(0),
+    );
+  });
 
 function validateRejectedCalculation(
   calculation: () => CalculationResult,
@@ -281,7 +396,8 @@ export default function EngineeringTestPage() {
           height produce a 25 mm outside tray, 18.5 mm usable tray, 72 mm
           base, and 85 mm closed storage system with the centralized 13 mm
           box lid. Width, depth, and tray-height design-limit boundaries also
-          passed for both dimension strategies.
+          passed for both dimension strategies. The MakerWorld parameter
+          mapping also matches the current CalculationResult.
         </p>
       </section>
     </main>

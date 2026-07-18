@@ -1,6 +1,9 @@
 import CalculationPreview from "@/components/CalculationPreview";
+import MakerWorldParameterPreview from "@/components/MakerWorldParameterPreview";
 
 import type { CalculationState } from "@/components/storage-design-assistant/types";
+
+import { generateMakerWorldParameters } from "@/lib/engineering/makerworld";
 
 type CalculationSectionProps = {
   calculationState: CalculationState;
@@ -9,10 +12,21 @@ type CalculationSectionProps = {
 export default function CalculationSection({
   calculationState,
 }: CalculationSectionProps) {
+  const makerWorldParameters =
+    calculationState.result?.tray && calculationState.result.heights
+      ? generateMakerWorldParameters(calculationState.result)
+      : null;
+
   return (
     <>
       {calculationState.result && (
-        <CalculationPreview result={calculationState.result} />
+        <>
+          <CalculationPreview result={calculationState.result} />
+
+          {makerWorldParameters && (
+            <MakerWorldParameterPreview parameters={makerWorldParameters} />
+          )}
+        </>
       )}
 
       {calculationState.error && (
