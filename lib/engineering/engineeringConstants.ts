@@ -9,8 +9,9 @@ export const ENGINEERING_CONSTANTS = {
   tray: {
     clearance: 0.4,
     wallThickness: 2.5,
+    bottomThickness: 2.5,
     sideAirGap: 2,
-    internalHeightAllowance: 4,
+    lidHeightContribution: 4,
     verticalOverlap: 2,
   },
 

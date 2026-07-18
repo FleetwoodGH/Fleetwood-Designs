@@ -29,7 +29,7 @@ const usableSpaceLedInput: UsableSpaceLedStorageSystemCalculationInput = {
   width: 40,
   depth: 30,
   heights: {
-    usableTrayHeight: 21,
+    usableTrayHeight: 18.5,
   },
 };
 
@@ -43,7 +43,7 @@ function validateHeightResult(result: CalculationResult, testName: string) {
 
   const expectedValues = {
     trayOutsideHeight: 25,
-    usableTrayHeight: 21,
+    usableTrayHeight: 18.5,
     lidHeight: 13,
     baseHeight: 72,
     closedOutsideHeight: 85,
@@ -179,9 +179,10 @@ export default function EngineeringTestPage() {
         </h2>
 
         <p className="mt-2 text-emerald-800">
-          Both a 25 mm tray outside height and a 21 mm required usable tray
-          height produce a 25 mm outside tray, 21 mm usable tray, 72 mm base,
-          and 85 mm closed storage system with the centralized 13 mm lid.
+          Both a 25 mm tray outside height and an 18.5 mm required usable tray
+          height produce a 25 mm outside tray, 18.5 mm usable tray, 72 mm
+          base, and 85 mm closed storage system with the centralized 13 mm
+          box lid.
         </p>
       </section>
     </main>

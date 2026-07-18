@@ -5,6 +5,7 @@ type DimensionFieldProps = {
   minimum: number;
   isValid: boolean;
   hasError: boolean;
+  inputMode?: "numeric" | "decimal";
   onChange: (value: string) => void;
 };
 
@@ -15,6 +16,7 @@ export default function DimensionField({
   minimum,
   isValid,
   hasError,
+  inputMode = "numeric",
   onChange,
 }: DimensionFieldProps) {
   const helpId = `${id}-help`;
@@ -38,8 +40,8 @@ export default function DimensionField({
         <input
           id={id}
           type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
+          inputMode={inputMode}
+          pattern={inputMode === "decimal" ? "[0-9]*[.]?[0-9]*" : "[0-9]*"}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           aria-invalid={hasError}

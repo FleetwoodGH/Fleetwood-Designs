@@ -32,6 +32,7 @@ export default function TrayHeightInput({
           minimum={minimumHeight}
           isValid={isValid}
           hasError={hasError}
+          inputMode="decimal"
           onChange={onChange}
         />
       </div>

@@ -31,12 +31,14 @@ export function calculateClosedOutsideHeight(
 
 export function calculateUsableTrayHeight(trayOutsideHeight: number) {
   const usableTrayHeight = roundDimension(
-    trayOutsideHeight - ENGINEERING_CONSTANTS.tray.internalHeightAllowance,
+    trayOutsideHeight -
+      ENGINEERING_CONSTANTS.tray.bottomThickness -
+      ENGINEERING_CONSTANTS.tray.lidHeightContribution,
   );
 
   if (usableTrayHeight <= 0) {
     throw new Error(
-      "Tray outside height is too small for the configured internal height allowance.",
+      "Tray outside height is too small for the tray bottom and lid assembly.",
     );
   }
 
@@ -45,7 +47,9 @@ export function calculateUsableTrayHeight(trayOutsideHeight: number) {
 
 export function calculateTrayOutsideHeight(usableTrayHeight: number) {
   return roundDimension(
-    usableTrayHeight + ENGINEERING_CONSTANTS.tray.internalHeightAllowance,
+    usableTrayHeight +
+      ENGINEERING_CONSTANTS.tray.bottomThickness +
+      ENGINEERING_CONSTANTS.tray.lidHeightContribution,
   );
 }
 

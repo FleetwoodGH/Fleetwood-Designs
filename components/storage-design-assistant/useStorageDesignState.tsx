@@ -24,6 +24,10 @@ function isWholeNumber(value: string) {
   return value === "" || /^\d+$/.test(value);
 }
 
+function isDecimalNumber(value: string) {
+  return value === "" || /^\d*(?:\.\d*)?$/.test(value);
+}
+
 export function useStorageDesignState() {
   const [buildType, setBuildType] = useState<BuildType>(null);
   const [trayType, setTrayType] = useState<TrayType>(null);
@@ -90,7 +94,7 @@ export function useStorageDesignState() {
 
   const trayHeightIsValid =
     requestedTrayHeightValue !== null &&
-    Number.isInteger(requestedTrayHeightValue) &&
+    Number.isFinite(requestedTrayHeightValue) &&
     requestedTrayHeightValue >= MIN_ENGINEERING_HEIGHT;
 
   const widthHasError = requestedWidth !== "" && !widthIsValid;
@@ -353,7 +357,7 @@ export function useStorageDesignState() {
   }
 
   function handleTrayHeightChange(value: string) {
-    if (!isWholeNumber(value)) {
+    if (!isDecimalNumber(value)) {
       return;
     }
 
