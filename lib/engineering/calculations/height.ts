@@ -1,15 +1,10 @@
 import { ENGINEERING_CONSTANTS } from "@/lib/engineering/engineeringConstants";
+import { roundDimension } from "@/lib/engineering/calculations/numeric";
 
 import type {
   StorageSystemCalculationInput,
   StorageSystemHeightResult,
 } from "@/lib/engineering/types";
-
-const CALCULATION_PRECISION = 3;
-
-function roundDimension(value: number) {
-  return Number(value.toFixed(CALCULATION_PRECISION));
-}
 
 export function calculateBaseHeight(
   trayOutsideHeight: number,

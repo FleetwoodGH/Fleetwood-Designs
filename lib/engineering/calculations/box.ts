@@ -1,10 +1,5 @@
 import { ENGINEERING_CONSTANTS } from "@/lib/engineering/engineeringConstants";
-
-const CALCULATION_PRECISION = 3;
-
-function roundDimension(value: number) {
-  return Number(value.toFixed(CALCULATION_PRECISION));
-}
+import { roundDimension } from "@/lib/engineering/calculations/numeric";
 
 export function calculateBoxInsideWidth(boxOutsideWidth: number) {
   return roundDimension(

@@ -2,22 +2,15 @@ import {
   ENGINEERING_CONSTANTS,
   ENGINEERING_LIMITS,
 } from "@/lib/engineering/engineeringConstants";
+import {
+  roundDimension,
+  roundDividerPosition,
+} from "@/lib/engineering/calculations/numeric";
 
 import type {
   CompartmentDimensions,
   DividerConfiguration,
 } from "@/lib/engineering/types";
-
-const CALCULATION_PRECISION = 3;
-const DIVIDER_POSITION_PRECISION = 6;
-
-function roundDimension(value: number) {
-  return Number(value.toFixed(CALCULATION_PRECISION));
-}
-
-function roundDividerPosition(value: number) {
-  return Number(value.toFixed(DIVIDER_POSITION_PRECISION));
-}
 
 /* -------------------------------------------------------------------------- */
 /* Compartment geometry                                                       */

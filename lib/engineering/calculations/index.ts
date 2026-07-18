@@ -13,6 +13,7 @@ import {
 } from "@/lib/engineering/calculations/divider";
 
 import { calculateStorageSystemHeights } from "@/lib/engineering/calculations/height";
+import { roundDimension } from "@/lib/engineering/calculations/numeric";
 
 import {
   calculateBoxInsideDepthFromTray,
@@ -33,12 +34,6 @@ import type {
   CalculationResult,
   CompartmentDimensions,
 } from "@/lib/engineering/types";
-
-const CALCULATION_PRECISION = 3;
-
-function roundDimension(value: number) {
-  return Number(value.toFixed(CALCULATION_PRECISION));
-}
 
 /* -------------------------------------------------------------------------- */
 /* Outside-led calculation                                                    */
@@ -318,5 +313,6 @@ export function calculateStorageDesign(
 export * from "./box";
 export * from "./divider";
 export * from "./height";
+export * from "./numeric";
 export * from "./tray";
 export * from "./validation";
