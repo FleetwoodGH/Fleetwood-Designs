@@ -3,6 +3,7 @@ export const ENGINEERING_CONSTANTS = {
     wallThickness: 4,
     backWallThickness: 5,
     bottomThickness: 3,
+    lidHeight: 13,
   },
 
   tray: {

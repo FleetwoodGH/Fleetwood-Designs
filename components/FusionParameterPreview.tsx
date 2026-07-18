@@ -139,8 +139,14 @@ export default function FusionParameterPreview({
           {result.heights && (
             <ParameterSection title="Height Parameters">
               <ParameterRow
-                name="trayHeight"
-                value={result.heights.trayHeight}
+                name="trayOutsideHeight"
+                value={result.heights.trayOutsideHeight}
+                unit="mm"
+              />
+
+              <ParameterRow
+                name="usableTrayHeight"
+                value={result.heights.usableTrayHeight}
                 unit="mm"
               />
 
@@ -157,8 +163,8 @@ export default function FusionParameterPreview({
               />
 
               <ParameterRow
-                name="outsideHeight"
-                value={result.heights.outsideHeight}
+                name="closedOutsideHeight"
+                value={result.heights.closedOutsideHeight}
                 unit="mm"
               />
             </ParameterSection>

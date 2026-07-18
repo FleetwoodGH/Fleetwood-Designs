@@ -23,8 +23,14 @@ export function validateCalculationInput(input: CalculationInput) {
     return;
   }
 
-  requirePositiveValue(input.heights.trayHeight, "Tray height");
-  requirePositiveValue(input.heights.lidHeight, "Lid height");
+  if (input.strategy === "outside-led") {
+    requirePositiveValue(
+      input.heights.trayOutsideHeight,
+      "Tray outside height",
+    );
+  } else {
+    requirePositiveValue(input.heights.usableTrayHeight, "Usable tray height");
+  }
 
   requirePositiveInteger(input.rows, "Rows");
   requirePositiveInteger(input.columns, "Columns");

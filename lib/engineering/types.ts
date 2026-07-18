@@ -17,12 +17,10 @@ export type StandaloneBoxCalculationInput = CalculationInputBase & {
   boxHeight: number;
 };
 
-export type StorageSystemHeightInput = {
-  trayHeight: number;
-  lidHeight: number;
-};
-
-export type StorageSystemCalculationInput = CalculationInputBase & {
+type StorageSystemCalculationInputBase = Omit<
+  CalculationInputBase,
+  "strategy"
+> & {
   buildType: "system";
   trayType: TrayType;
   dividerLayout?: DividerLayout;
@@ -30,9 +28,27 @@ export type StorageSystemCalculationInput = CalculationInputBase & {
   trayNumber: number;
   rows: number;
   columns: number;
-
-  heights: StorageSystemHeightInput;
 };
+
+export type OutsideLedStorageSystemCalculationInput =
+  StorageSystemCalculationInputBase & {
+    strategy: "outside-led";
+    heights: {
+      trayOutsideHeight: number;
+    };
+  };
+
+export type UsableSpaceLedStorageSystemCalculationInput =
+  StorageSystemCalculationInputBase & {
+    strategy: "usable-space-led";
+    heights: {
+      usableTrayHeight: number;
+    };
+  };
+
+export type StorageSystemCalculationInput =
+  | OutsideLedStorageSystemCalculationInput
+  | UsableSpaceLedStorageSystemCalculationInput;
 
 export type CalculationInput =
   | StandaloneBoxCalculationInput
@@ -95,10 +111,11 @@ export type DividerConfiguration = {
 };
 
 export type StorageSystemHeightResult = {
-  trayHeight: number;
+  trayOutsideHeight: number;
+  usableTrayHeight: number;
   lidHeight: number;
   baseHeight: number;
-  outsideHeight: number;
+  closedOutsideHeight: number;
 };
 
 export type CalculationResult = {

@@ -1,7 +1,7 @@
 import { ENGINEERING_CONSTANTS } from "@/lib/engineering/engineeringConstants";
 
 import type {
-  StorageSystemHeightInput,
+  StorageSystemCalculationInput,
   StorageSystemHeightResult,
 } from "@/lib/engineering/types";
 
@@ -12,35 +12,67 @@ function roundDimension(value: number) {
 }
 
 export function calculateBaseHeight(
-  trayHeight: number,
+  trayOutsideHeight: number,
   trayNumber: number,
 ) {
   return roundDimension(
-    trayHeight * trayNumber +
+    trayOutsideHeight * trayNumber +
       ENGINEERING_CONSTANTS.base.topAllowance -
       (trayNumber - 1) * ENGINEERING_CONSTANTS.tray.verticalOverlap,
   );
 }
 
-export function calculateOutsideHeight(
+export function calculateClosedOutsideHeight(
   baseHeight: number,
   lidHeight: number,
 ) {
   return roundDimension(baseHeight + lidHeight);
 }
 
+export function calculateUsableTrayHeight(trayOutsideHeight: number) {
+  const usableTrayHeight = roundDimension(
+    trayOutsideHeight - ENGINEERING_CONSTANTS.tray.internalHeightAllowance,
+  );
+
+  if (usableTrayHeight <= 0) {
+    throw new Error(
+      "Tray outside height is too small for the configured internal height allowance.",
+    );
+  }
+
+  return usableTrayHeight;
+}
+
+export function calculateTrayOutsideHeight(usableTrayHeight: number) {
+  return roundDimension(
+    usableTrayHeight + ENGINEERING_CONSTANTS.tray.internalHeightAllowance,
+  );
+}
+
 export function calculateStorageSystemHeights(
-  input: StorageSystemHeightInput,
-  trayNumber: number,
+  input: StorageSystemCalculationInput,
 ): StorageSystemHeightResult {
-  const trayHeight = roundDimension(input.trayHeight);
-  const lidHeight = roundDimension(input.lidHeight);
-  const baseHeight = calculateBaseHeight(trayHeight, trayNumber);
+  const trayOutsideHeight =
+    input.strategy === "outside-led"
+      ? roundDimension(input.heights.trayOutsideHeight)
+      : calculateTrayOutsideHeight(input.heights.usableTrayHeight);
+
+  const usableTrayHeight =
+    input.strategy === "outside-led"
+      ? calculateUsableTrayHeight(trayOutsideHeight)
+      : roundDimension(input.heights.usableTrayHeight);
+
+  const lidHeight = ENGINEERING_CONSTANTS.box.lidHeight;
+  const baseHeight = calculateBaseHeight(
+    trayOutsideHeight,
+    input.trayNumber,
+  );
 
   return {
-    trayHeight,
+    trayOutsideHeight,
+    usableTrayHeight,
     lidHeight,
     baseHeight,
-    outsideHeight: calculateOutsideHeight(baseHeight, lidHeight),
+    closedOutsideHeight: calculateClosedOutsideHeight(baseHeight, lidHeight),
   };
 }

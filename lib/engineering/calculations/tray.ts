@@ -78,13 +78,15 @@ export function createTrayDimensions(
   outsideHeight: number,
   usableWidth: number,
   usableDepth: number,
+  usableHeight: number,
 ): TrayDimensions {
   if (
     outsideWidth <= 0 ||
     outsideDepth <= 0 ||
     outsideHeight <= 0 ||
     usableWidth <= 0 ||
-    usableDepth <= 0
+    usableDepth <= 0 ||
+    usableHeight <= 0
   ) {
     throw new Error(
       "The calculated tray dimensions must be greater than zero.",
@@ -98,6 +100,6 @@ export function createTrayDimensions(
 
     usableWidth: roundDimension(usableWidth),
     usableDepth: roundDimension(usableDepth),
-    usableHeight: null,
+    usableHeight: roundDimension(usableHeight),
   };
 }

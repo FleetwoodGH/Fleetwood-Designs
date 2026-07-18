@@ -1,7 +1,14 @@
-import { calculateOutsideLed } from "@/lib/engineering/calculations";
-import type { StorageSystemCalculationInput } from "@/lib/engineering/types";
+import {
+  calculateOutsideLed,
+  calculateUsableSpaceLed,
+} from "@/lib/engineering/calculations";
+import type {
+  CalculationResult,
+  OutsideLedStorageSystemCalculationInput,
+  UsableSpaceLedStorageSystemCalculationInput,
+} from "@/lib/engineering/types";
 
-const testInput: StorageSystemCalculationInput = {
+const outsideLedInput: OutsideLedStorageSystemCalculationInput = {
   buildType: "system",
   trayType: "dividers",
   dividerLayout: "equal",
@@ -12,13 +19,59 @@ const testInput: StorageSystemCalculationInput = {
   width: 125,
   depth: 80,
   heights: {
-    trayHeight: 25,
-    lidHeight: 13,
+    trayOutsideHeight: 25,
   },
 };
 
+const usableSpaceLedInput: UsableSpaceLedStorageSystemCalculationInput = {
+  ...outsideLedInput,
+  strategy: "usable-space-led",
+  width: 40,
+  depth: 30,
+  heights: {
+    usableTrayHeight: 21,
+  },
+};
+
+const outsideLedResult = calculateOutsideLed(outsideLedInput);
+const usableSpaceLedResult = calculateUsableSpaceLed(usableSpaceLedInput);
+
+function validateHeightResult(result: CalculationResult, testName: string) {
+  if (!result.heights || !result.tray) {
+    throw new Error(`${testName} did not produce storage-system heights.`);
+  }
+
+  const expectedValues = {
+    trayOutsideHeight: 25,
+    usableTrayHeight: 21,
+    lidHeight: 13,
+    baseHeight: 72,
+    closedOutsideHeight: 85,
+  };
+
+  for (const [name, expected] of Object.entries(expectedValues)) {
+    const actual = result.heights[name as keyof typeof expectedValues];
+
+    if (actual !== expected) {
+      throw new Error(
+        `${testName} expected ${name} to equal ${expected}, received ${actual}.`,
+      );
+    }
+  }
+
+  if (
+    result.tray.outsideHeight !== expectedValues.trayOutsideHeight ||
+    result.tray.usableHeight !== expectedValues.usableTrayHeight
+  ) {
+    throw new Error(`${testName} did not populate the tray height result.`);
+  }
+}
+
+validateHeightResult(outsideLedResult, "Outside-led height validation");
+validateHeightResult(usableSpaceLedResult, "Usable-space-led height validation");
+
 export default function EngineeringTestPage() {
-  const result = calculateOutsideLed(testInput);
+  const result = outsideLedResult;
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl bg-white px-6 py-16 text-neutral-900">
@@ -32,7 +85,7 @@ export default function EngineeringTestPage() {
         </h1>
 
         <p className="mt-4 text-neutral-600">
-          Outside-led validation for a 2 × 4 equal grid.
+          Outside-led and usable-space-led validation for a 2 × 4 equal grid.
         </p>
       </header>
 
@@ -42,29 +95,28 @@ export default function EngineeringTestPage() {
         <dl className="mt-4 grid gap-4 sm:grid-cols-3">
           <div>
             <dt className="text-sm text-neutral-500">Outside width</dt>
-            <dd className="font-medium">{testInput.width} mm</dd>
+            <dd className="font-medium">{outsideLedInput.width} mm</dd>
           </div>
 
           <div>
             <dt className="text-sm text-neutral-500">Outside depth</dt>
-            <dd className="font-medium">{testInput.depth} mm</dd>
+            <dd className="font-medium">{outsideLedInput.depth} mm</dd>
           </div>
 
           <div>
             <dt className="text-sm text-neutral-500">Grid</dt>
             <dd className="font-medium">
-              {testInput.rows} × {testInput.columns}
+              {outsideLedInput.rows} × {outsideLedInput.columns}
             </dd>
           </div>
 
           <div>
-            <dt className="text-sm text-neutral-500">Tray height</dt>
-            <dd className="font-medium">{testInput.heights.trayHeight} mm</dd>
-          </div>
-
-          <div>
-            <dt className="text-sm text-neutral-500">Lid height</dt>
-            <dd className="font-medium">{testInput.heights.lidHeight} mm</dd>
+            <dt className="text-sm text-neutral-500">
+              Tray outside height
+            </dt>
+            <dd className="font-medium">
+              {outsideLedInput.heights.trayOutsideHeight} mm
+            </dd>
           </div>
         </dl>
       </section>
@@ -85,14 +137,16 @@ export default function EngineeringTestPage() {
               <div>
                 <dt className="text-sm text-neutral-500">Tray outside</dt>
                 <dd className="mt-1 font-medium">
-                  {result.tray.outsideWidth} × {result.tray.outsideDepth} mm
+                  {result.tray.outsideWidth} × {result.tray.outsideDepth} ×{" "}
+                  {result.tray.outsideHeight} mm
                 </dd>
               </div>
 
               <div>
                 <dt className="text-sm text-neutral-500">Tray usable</dt>
                 <dd className="mt-1 font-medium">
-                  {result.tray.usableWidth} × {result.tray.usableDepth} mm
+                  {result.tray.usableWidth} × {result.tray.usableDepth} ×{" "}
+                  {result.tray.usableHeight} mm
                 </dd>
               </div>
             </>
@@ -112,11 +166,23 @@ export default function EngineeringTestPage() {
               <dt className="text-sm text-neutral-500">System heights</dt>
               <dd className="mt-1 font-medium">
                 Base {result.heights.baseHeight} mm · closed outside{" "}
-                {result.heights.outsideHeight} mm
+                {result.heights.closedOutsideHeight} mm
               </dd>
             </div>
           )}
         </dl>
+      </section>
+
+      <section className="mt-8 rounded-xl border border-emerald-200 bg-emerald-50 p-6">
+        <h2 className="text-xl font-semibold text-emerald-950">
+          Height strategy validation passed
+        </h2>
+
+        <p className="mt-2 text-emerald-800">
+          Both a 25 mm tray outside height and a 21 mm required usable tray
+          height produce a 25 mm outside tray, 21 mm usable tray, 72 mm base,
+          and 85 mm closed storage system with the centralized 13 mm lid.
+        </p>
       </section>
     </main>
   );

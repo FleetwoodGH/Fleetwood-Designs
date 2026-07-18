@@ -1,4 +1,5 @@
 import type { DimensionTarget } from "@/components/storage-design-assistant/types";
+import type { DimensionStrategy } from "@/components/storage-design-assistant/types";
 
 type WorkflowTextContext = {
   trayNumber: number;
@@ -146,4 +147,22 @@ export function getBoxHeightLabel(target: DimensionTarget) {
     default:
       return "Box height";
   }
+}
+
+export function getTrayHeightTitle(strategy: DimensionStrategy) {
+  return strategy === "outside-led"
+    ? "Specify the tray outside height"
+    : "Specify the required usable tray height";
+}
+
+export function getTrayHeightDescription(strategy: DimensionStrategy) {
+  return strategy === "outside-led"
+    ? "Enter the known outside height of each tray. The usable tray height and complete storage-system height will be calculated automatically."
+    : "Enter the usable internal height required in each tray. The tray outside height and complete storage-system height will be calculated automatically.";
+}
+
+export function getTrayHeightLabel(strategy: DimensionStrategy) {
+  return strategy === "outside-led"
+    ? "Tray outside height"
+    : "Required usable tray height";
 }

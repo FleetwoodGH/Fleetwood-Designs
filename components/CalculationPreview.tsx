@@ -120,14 +120,24 @@ export default function CalculationPreview({
               label="Usable depth"
               value={result.tray.usableDepth}
             />
+
+            <DimensionRow
+              label="Usable height"
+              value={result.tray.usableHeight}
+            />
           </ResultSection>
         )}
 
         {result.heights && (
           <ResultSection title="Storage-System Heights">
             <DimensionRow
-              label="Tray height"
-              value={result.heights.trayHeight}
+              label="Tray outside height"
+              value={result.heights.trayOutsideHeight}
+            />
+
+            <DimensionRow
+              label="Usable tray height"
+              value={result.heights.usableTrayHeight}
             />
 
             <DimensionRow
@@ -142,7 +152,7 @@ export default function CalculationPreview({
 
             <DimensionRow
               label="Closed outside height"
-              value={result.heights.outsideHeight}
+              value={result.heights.closedOutsideHeight}
             />
           </ResultSection>
         )}

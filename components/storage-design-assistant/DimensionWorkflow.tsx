@@ -1,7 +1,7 @@
 import BoxHeightInput from "@/components/BoxHeightInput";
 import DecisionStep from "@/components/DecisionStep";
 import DimensionInputs from "@/components/DimensionInputs";
-import StorageSystemHeightInputs from "@/components/StorageSystemHeightInputs";
+import TrayHeightInput from "@/components/TrayHeightInput";
 
 import { dimensionStrategyOptions } from "@/components/storage-design-assistant/workflowOptions";
 
@@ -17,6 +17,9 @@ import {
   getDimensionStrategyDescription,
   getDimensionTitle,
   getBoxHeightLabel,
+  getTrayHeightDescription,
+  getTrayHeightLabel,
+  getTrayHeightTitle,
   getWidthLabel,
 } from "@/components/storage-design-assistant/workflowText";
 
@@ -34,8 +37,7 @@ type DimensionWorkflowProps = {
   requestedWidth: string;
   requestedDepth: string;
   boxHeight: string;
-  trayHeight: string;
-  lidHeight: string;
+  requestedTrayHeight: string;
 
   minWidth: number;
   minDepth: number;
@@ -45,20 +47,17 @@ type DimensionWorkflowProps = {
   depthIsValid: boolean;
   boxHeightIsValid: boolean;
   trayHeightIsValid: boolean;
-  lidHeightIsValid: boolean;
 
   widthHasError: boolean;
   depthHasError: boolean;
   boxHeightHasError: boolean;
   trayHeightHasError: boolean;
-  lidHeightHasError: boolean;
 
   onDimensionStrategySelect: (optionId: string) => void;
   onWidthChange: (value: string) => void;
   onDepthChange: (value: string) => void;
   onBoxHeightChange: (value: string) => void;
   onTrayHeightChange: (value: string) => void;
-  onLidHeightChange: (value: string) => void;
 };
 
 export default function DimensionWorkflow({
@@ -72,8 +71,7 @@ export default function DimensionWorkflow({
   requestedWidth,
   requestedDepth,
   boxHeight,
-  trayHeight,
-  lidHeight,
+  requestedTrayHeight,
   minWidth,
   minDepth,
   minimumEngineeringHeight,
@@ -81,18 +79,15 @@ export default function DimensionWorkflow({
   depthIsValid,
   boxHeightIsValid,
   trayHeightIsValid,
-  lidHeightIsValid,
   widthHasError,
   depthHasError,
   boxHeightHasError,
   trayHeightHasError,
-  lidHeightHasError,
   onDimensionStrategySelect,
   onWidthChange,
   onDepthChange,
   onBoxHeightChange,
   onTrayHeightChange,
-  onLidHeightChange,
 }: DimensionWorkflowProps) {
   const textContext = {
     trayNumber,
@@ -173,16 +168,15 @@ export default function DimensionWorkflow({
       )}
 
       {depthIsValid && buildType === "system" && (
-        <StorageSystemHeightInputs
-          trayHeight={trayHeight}
-          lidHeight={lidHeight}
+        <TrayHeightInput
+          title={getTrayHeightTitle(dimensionStrategy)}
+          description={getTrayHeightDescription(dimensionStrategy)}
+          label={getTrayHeightLabel(dimensionStrategy)}
+          value={requestedTrayHeight}
           minimumHeight={minimumEngineeringHeight}
-          trayHeightIsValid={trayHeightIsValid}
-          lidHeightIsValid={lidHeightIsValid}
-          trayHeightHasError={trayHeightHasError}
-          lidHeightHasError={lidHeightHasError}
-          onTrayHeightChange={onTrayHeightChange}
-          onLidHeightChange={onLidHeightChange}
+          isValid={trayHeightIsValid}
+          hasError={trayHeightHasError}
+          onChange={onTrayHeightChange}
         />
       )}
     </>

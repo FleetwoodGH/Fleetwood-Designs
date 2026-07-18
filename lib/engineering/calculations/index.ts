@@ -95,10 +95,7 @@ export function calculateOutsideLed(
     };
   }
 
-  const heights = calculateStorageSystemHeights(
-    input.heights,
-    input.trayNumber,
-  );
+  const heights = calculateStorageSystemHeights(input);
 
   const trayOutsideWidth = calculateTrayOutsideWidth(boxInsideWidth);
   const trayOutsideDepth = calculateTrayOutsideDepth(boxInsideDepth);
@@ -109,21 +106,25 @@ export function calculateOutsideLed(
   const tray = createTrayDimensions(
     trayOutsideWidth,
     trayOutsideDepth,
-    heights.trayHeight,
+    heights.trayOutsideHeight,
     trayUsableWidth,
     trayUsableDepth,
+    heights.usableTrayHeight,
   );
 
   const equalGridSelected =
     input.trayType === "dividers" && input.dividerLayout === "equal";
 
   const compartment = equalGridSelected
-    ? calculateCompartmentDimensions(
-        trayUsableWidth,
-        trayUsableDepth,
-        input.rows,
-        input.columns,
-      )
+    ? {
+        ...calculateCompartmentDimensions(
+          trayUsableWidth,
+          trayUsableDepth,
+          input.rows,
+          input.columns,
+        ),
+        height: heights.usableTrayHeight,
+      }
     : null;
 
   const dividers = equalGridSelected
@@ -141,7 +142,7 @@ export function calculateOutsideLed(
     box: {
       outsideWidth: roundDimension(input.width),
       outsideDepth: roundDimension(input.depth),
-      outsideHeight: heights.outsideHeight,
+      outsideHeight: heights.closedOutsideHeight,
 
       insideWidth: boxInsideWidth,
       insideDepth: boxInsideDepth,
@@ -209,10 +210,7 @@ export function calculateUsableSpaceLed(
     };
   }
 
-  const heights = calculateStorageSystemHeights(
-    input.heights,
-    input.trayNumber,
-  );
+  const heights = calculateStorageSystemHeights(input);
 
   const equalGridSelected =
     input.trayType === "dividers" && input.dividerLayout === "equal";
@@ -235,7 +233,7 @@ export function calculateUsableSpaceLed(
     compartment = {
       width: roundDimension(input.width),
       depth: roundDimension(input.depth),
-      height: null,
+      height: heights.usableTrayHeight,
     };
   } else {
     trayUsableWidth = roundDimension(input.width);
@@ -258,9 +256,10 @@ export function calculateUsableSpaceLed(
   const tray = createTrayDimensions(
     trayOutsideWidth,
     trayOutsideDepth,
-    heights.trayHeight,
+    heights.trayOutsideHeight,
     trayUsableWidth,
     trayUsableDepth,
+    heights.usableTrayHeight,
   );
 
   const dividers = equalGridSelected
@@ -278,7 +277,7 @@ export function calculateUsableSpaceLed(
     box: {
       outsideWidth: boxOutsideWidth,
       outsideDepth: boxOutsideDepth,
-      outsideHeight: heights.outsideHeight,
+      outsideHeight: heights.closedOutsideHeight,
 
       insideWidth: boxInsideWidth,
       insideDepth: boxInsideDepth,
