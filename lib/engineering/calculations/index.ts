@@ -27,7 +27,11 @@ import {
   createTrayDimensions,
 } from "@/lib/engineering/calculations/tray";
 
-import { validateCalculationInput } from "@/lib/engineering/calculations/validation";
+import {
+  validateBoxOutsideDesignLimits,
+  validateCalculationInput,
+  validateTrayOutsideHeightDesignLimit,
+} from "@/lib/engineering/calculations/validation";
 
 import type {
   CalculationInput,
@@ -179,6 +183,8 @@ export function calculateUsableSpaceLed(
     const boxOutsideWidth = calculateBoxOutsideWidth(input.width);
     const boxOutsideDepth = calculateBoxOutsideDepth(input.depth);
 
+    validateBoxOutsideDesignLimits(boxOutsideWidth, boxOutsideDepth);
+
     return {
       strategy: input.strategy,
 
@@ -206,6 +212,8 @@ export function calculateUsableSpaceLed(
   }
 
   const heights = calculateStorageSystemHeights(input);
+
+  validateTrayOutsideHeightDesignLimit(heights.trayOutsideHeight);
 
   const equalGridSelected =
     input.trayType === "dividers" && input.dividerLayout === "equal";
@@ -247,6 +255,8 @@ export function calculateUsableSpaceLed(
 
   const boxOutsideWidth = calculateBoxOutsideWidth(boxInsideWidth);
   const boxOutsideDepth = calculateBoxOutsideDepth(boxInsideDepth);
+
+  validateBoxOutsideDesignLimits(boxOutsideWidth, boxOutsideDepth);
 
   const tray = createTrayDimensions(
     trayOutsideWidth,

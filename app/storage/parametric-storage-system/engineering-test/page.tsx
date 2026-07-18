@@ -2,6 +2,7 @@ import {
   calculateOutsideLed,
   calculateUsableSpaceLed,
 } from "@/lib/engineering/calculations";
+import { ENGINEERING_LIMITS } from "@/lib/engineering/engineeringConstants";
 import type {
   CalculationResult,
   OutsideLedStorageSystemCalculationInput,
@@ -70,16 +71,17 @@ function validateHeightResult(result: CalculationResult, testName: string) {
 validateHeightResult(outsideLedResult, "Outside-led height validation");
 validateHeightResult(usableSpaceLedResult, "Usable-space-led height validation");
 
-function validateRejectedOutsideHeight(trayOutsideHeight: number) {
+function validateRejectedCalculation(
+  calculation: () => CalculationResult,
+  expectedMessage: string,
+  testName: string,
+) {
   try {
-    calculateOutsideLed({
-      ...outsideLedInput,
-      heights: { trayOutsideHeight },
-    });
+    calculation();
   } catch (error) {
     if (
       error instanceof Error &&
-      error.message.includes("must be greater than 6.5 mm")
+      error.message.includes(expectedMessage)
     ) {
       return;
     }
@@ -88,11 +90,82 @@ function validateRejectedOutsideHeight(trayOutsideHeight: number) {
   }
 
   throw new Error(
-    `Outside-led height validation accepted invalid ${trayOutsideHeight} mm tray height.`,
+    `${testName} unexpectedly accepted an unsupported dimension.`,
   );
 }
 
-validateRejectedOutsideHeight(6.5);
+validateRejectedCalculation(
+  () =>
+    calculateOutsideLed({
+      ...outsideLedInput,
+      width: 94.999,
+    }),
+  "Box outside width must be at least 95 mm",
+  "Outside width boundary validation",
+);
+calculateOutsideLed({ ...outsideLedInput, width: 95 });
+
+validateRejectedCalculation(
+  () =>
+    calculateOutsideLed({
+      ...outsideLedInput,
+      depth: 39.999,
+    }),
+  "Box outside depth must be at least 40 mm",
+  "Outside depth boundary validation",
+);
+calculateOutsideLed({ ...outsideLedInput, depth: 40 });
+
+validateRejectedCalculation(
+  () =>
+    calculateOutsideLed({
+      ...outsideLedInput,
+      heights: { trayOutsideHeight: 14.999 },
+    }),
+  "Tray outside height must be at least 15 mm",
+  "Outside tray height boundary validation",
+);
+const minimumOutsideHeightResult = calculateOutsideLed({
+  ...outsideLedInput,
+  heights: { trayOutsideHeight: 15 },
+});
+
+if (minimumOutsideHeightResult.heights?.trayOutsideHeight !== 15) {
+  throw new Error("The 15 mm outside tray height boundary was not preserved.");
+}
+
+const minimumUsableTrayHeight =
+  ENGINEERING_LIMITS.design.trayUsableHeight.minimum;
+
+validateRejectedCalculation(
+  () =>
+    calculateUsableSpaceLed({
+      ...usableSpaceLedInput,
+      heights: { usableTrayHeight: minimumUsableTrayHeight - 0.001 },
+    }),
+  "Tray outside height must be at least 15 mm",
+  "Usable tray height boundary validation",
+);
+const minimumUsableHeightResult = calculateUsableSpaceLed({
+  ...usableSpaceLedInput,
+  heights: { usableTrayHeight: minimumUsableTrayHeight },
+});
+
+if (minimumUsableHeightResult.heights?.trayOutsideHeight !== 15) {
+  throw new Error(
+    "The derived outside tray height did not equal the 15 mm design minimum.",
+  );
+}
+
+validateRejectedCalculation(
+  () =>
+    calculateOutsideLed({
+      ...outsideLedInput,
+      heights: { trayOutsideHeight: 6.5 },
+    }),
+  "must be greater than 6.5 mm",
+  "Outside tray height validity validation",
+);
 
 export default function EngineeringTestPage() {
   const result = outsideLedResult;
@@ -109,7 +182,8 @@ export default function EngineeringTestPage() {
         </h1>
 
         <p className="mt-4 text-neutral-600">
-          Outside-led and usable-space-led validation for a 2 × 4 equal grid.
+          Engineering validity, Fusion design-limit, and dimension-strategy
+          validation for a 2 × 4 equal grid.
         </p>
       </header>
 
@@ -199,14 +273,15 @@ export default function EngineeringTestPage() {
 
       <section className="mt-8 rounded-xl border border-emerald-200 bg-emerald-50 p-6">
         <h2 className="text-xl font-semibold text-emerald-950">
-          Height strategy validation passed
+          Engineering validation passed
         </h2>
 
         <p className="mt-2 text-emerald-800">
           Both a 25 mm tray outside height and an 18.5 mm required usable tray
           height produce a 25 mm outside tray, 18.5 mm usable tray, 72 mm
           base, and 85 mm closed storage system with the centralized 13 mm
-          box lid.
+          box lid. Width, depth, and tray-height design-limit boundaries also
+          passed for both dimension strategies.
         </p>
       </section>
     </main>

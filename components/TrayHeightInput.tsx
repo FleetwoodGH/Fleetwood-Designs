@@ -7,6 +7,7 @@ type TrayHeightInputProps = {
   label: string;
   value: string;
   minimumHeight: number;
+  requirement: string;
   isValid: boolean;
   hasError: boolean;
   onChange: (value: string) => void;
@@ -18,6 +19,7 @@ export default function TrayHeightInput({
   label,
   value,
   minimumHeight,
+  requirement,
   isValid,
   hasError,
   onChange,
@@ -30,7 +32,7 @@ export default function TrayHeightInput({
           label={label}
           value={value}
           minimum={minimumHeight}
-          minimumIsExclusive
+          requirement={requirement}
           isValid={isValid}
           hasError={hasError}
           inputMode="decimal"

@@ -14,9 +14,46 @@ function requirePositiveInteger(value: number, parameterName: string) {
   }
 }
 
+export function validateBoxOutsideDesignLimits(
+  boxOutsideWidth: number,
+  boxOutsideDepth: number,
+) {
+  if (boxOutsideWidth < ENGINEERING_LIMITS.design.boxWidth.minimum) {
+    throw new Error(
+      `Box outside width must be at least ${ENGINEERING_LIMITS.design.boxWidth.minimum} mm ` +
+        "to remain within the supported Fusion design limits.",
+    );
+  }
+
+  if (boxOutsideDepth < ENGINEERING_LIMITS.design.boxDepth.minimum) {
+    throw new Error(
+      `Box outside depth must be at least ${ENGINEERING_LIMITS.design.boxDepth.minimum} mm ` +
+        "to remain within the supported Fusion design limits.",
+    );
+  }
+}
+
+export function validateTrayOutsideHeightDesignLimit(
+  trayOutsideHeight: number,
+) {
+  if (
+    trayOutsideHeight <
+    ENGINEERING_LIMITS.design.trayOutsideHeight.minimum
+  ) {
+    throw new Error(
+      `Tray outside height must be at least ${ENGINEERING_LIMITS.design.trayOutsideHeight.minimum} mm ` +
+        "to remain within the supported Fusion design limits.",
+    );
+  }
+}
+
 export function validateCalculationInput(input: CalculationInput) {
   requirePositiveValue(input.width, "Width");
   requirePositiveValue(input.depth, "Depth");
+
+  if (input.strategy === "outside-led") {
+    validateBoxOutsideDesignLimits(input.width, input.depth);
+  }
 
   if (input.buildType === "box") {
     requirePositiveValue(input.boxHeight, "Box height");
@@ -31,13 +68,16 @@ export function validateCalculationInput(input: CalculationInput) {
 
     if (
       input.heights.trayOutsideHeight <=
-      ENGINEERING_LIMITS.trayHeight.minimumOutsideExclusive
+      ENGINEERING_LIMITS.validity.trayHeight.minimumOutsideExclusive
     ) {
       throw new Error(
-        `Tray outside height must be greater than ${ENGINEERING_LIMITS.trayHeight.minimumOutsideExclusive} mm ` +
-          "to provide positive usable height after the tray bottom and lid assembly.",
+        `Tray outside height must be greater than ${ENGINEERING_LIMITS.validity.trayHeight.minimumOutsideExclusive} mm.`,
       );
     }
+
+    validateTrayOutsideHeightDesignLimit(
+      input.heights.trayOutsideHeight,
+    );
   } else {
     requirePositiveValue(input.heights.usableTrayHeight, "Usable tray height");
   }

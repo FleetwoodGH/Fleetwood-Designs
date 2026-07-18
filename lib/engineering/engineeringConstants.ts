@@ -30,7 +30,43 @@ export const ENGINEERING_CONSTANTS = {
   },
 } as const;
 
+const MINIMUM_FUSION_TRAY_OUTSIDE_HEIGHT = 15;
+
 export const ENGINEERING_LIMITS = {
+  validity: {
+    dimensions: {
+      minimumExclusive: 0,
+    },
+
+    trayHeight: {
+      minimumUsableExclusive: 0,
+      minimumOutsideExclusive:
+        ENGINEERING_CONSTANTS.tray.bottomThickness +
+        ENGINEERING_CONSTANTS.tray.lidHeightContribution,
+    },
+  },
+
+  design: {
+    boxWidth: {
+      minimum: 95,
+    },
+
+    boxDepth: {
+      minimum: 40,
+    },
+
+    trayOutsideHeight: {
+      minimum: MINIMUM_FUSION_TRAY_OUTSIDE_HEIGHT,
+    },
+
+    trayUsableHeight: {
+      minimum:
+        MINIMUM_FUSION_TRAY_OUTSIDE_HEIGHT -
+        ENGINEERING_CONSTANTS.tray.bottomThickness -
+        ENGINEERING_CONSTANTS.tray.lidHeightContribution,
+    },
+  },
+
   grid: {
     minimumRows: 1,
     maximumRows: 6,
@@ -41,12 +77,5 @@ export const ENGINEERING_LIMITS = {
   trays: {
     minimum: 1,
     maximum: 10,
-  },
-
-  trayHeight: {
-    minimumUsableExclusive: 0,
-    minimumOutsideExclusive:
-      ENGINEERING_CONSTANTS.tray.bottomThickness +
-      ENGINEERING_CONSTANTS.tray.lidHeightContribution,
   },
 } as const;

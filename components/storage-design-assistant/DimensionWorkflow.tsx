@@ -41,8 +41,11 @@ type DimensionWorkflowProps = {
 
   minWidth: number;
   minDepth: number;
+  widthRequirement: string;
+  depthRequirement: string;
   minimumBoxHeight: number;
-  minimumTrayHeightExclusive: number;
+  minimumTrayHeight: number;
+  trayHeightRequirement: string;
 
   widthIsValid: boolean;
   depthIsValid: boolean;
@@ -75,8 +78,11 @@ export default function DimensionWorkflow({
   requestedTrayHeight,
   minWidth,
   minDepth,
+  widthRequirement,
+  depthRequirement,
   minimumBoxHeight,
-  minimumTrayHeightExclusive,
+  minimumTrayHeight,
+  trayHeightRequirement,
   widthIsValid,
   depthIsValid,
   boxHeightIsValid,
@@ -149,6 +155,8 @@ export default function DimensionWorkflow({
           depthLabel={getDepthLabel(dimensionTarget)}
           minWidth={minWidth}
           minDepth={minDepth}
+          widthRequirement={widthRequirement}
+          depthRequirement={depthRequirement}
           widthIsValid={widthIsValid}
           depthIsValid={depthIsValid}
           widthHasError={widthHasError}
@@ -175,7 +183,8 @@ export default function DimensionWorkflow({
           description={getTrayHeightDescription(dimensionStrategy)}
           label={getTrayHeightLabel(dimensionStrategy)}
           value={requestedTrayHeight}
-          minimumHeight={minimumTrayHeightExclusive}
+          minimumHeight={minimumTrayHeight}
+          requirement={trayHeightRequirement}
           isValid={trayHeightIsValid}
           hasError={trayHeightHasError}
           onChange={onTrayHeightChange}

@@ -13,6 +13,8 @@ type DimensionInputsProps = {
 
   minWidth: number;
   minDepth: number;
+  widthRequirement?: string;
+  depthRequirement?: string;
 
   widthIsValid: boolean;
   depthIsValid: boolean;
@@ -33,6 +35,8 @@ export default function DimensionInputs({
   depthLabel,
   minWidth,
   minDepth,
+  widthRequirement,
+  depthRequirement,
   widthIsValid,
   depthIsValid,
   widthHasError,
@@ -48,6 +52,7 @@ export default function DimensionInputs({
           label={widthLabel}
           value={width}
           minimum={minWidth}
+          requirement={widthRequirement}
           isValid={widthIsValid}
           hasError={widthHasError}
           onChange={onWidthChange}
@@ -59,6 +64,7 @@ export default function DimensionInputs({
             label={depthLabel}
             value={depth}
             minimum={minDepth}
+            requirement={depthRequirement}
             isValid={depthIsValid}
             hasError={depthHasError}
             onChange={onDepthChange}

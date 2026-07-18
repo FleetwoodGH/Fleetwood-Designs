@@ -17,12 +17,8 @@ import type {
 
 import type { CalculationInput } from "@/lib/engineering/types";
 
-// TODO: Replace these temporary placeholders with the authoritative Fusion
-// parameter limits when they are synchronized into the engineering architecture.
-const MIN_WIDTH = 20;
-const MIN_DEPTH = 20;
-
 const MIN_STANDALONE_BOX_HEIGHT = 1;
+const MINIMUM_POSITIVE_WHOLE_DIMENSION = 1;
 
 function isWholeNumber(value: string) {
   return value === "" || /^\d+$/.test(value);
@@ -85,20 +81,46 @@ export function useStorageDesignState() {
   const requestedTrayHeightValue =
     requestedTrayHeight === "" ? null : Number(requestedTrayHeight);
 
-  const minimumTrayHeightExclusive =
+  const outsideLed = dimensionStrategy === "outside-led";
+
+  const minimumWidth = outsideLed
+    ? ENGINEERING_LIMITS.design.boxWidth.minimum
+    : MINIMUM_POSITIVE_WHOLE_DIMENSION;
+
+  const minimumDepth = outsideLed
+    ? ENGINEERING_LIMITS.design.boxDepth.minimum
+    : MINIMUM_POSITIVE_WHOLE_DIMENSION;
+
+  const minimumTrayHeight = outsideLed
+    ? ENGINEERING_LIMITS.design.trayOutsideHeight.minimum
+    : ENGINEERING_LIMITS.design.trayUsableHeight.minimum;
+
+  const widthRequirement = outsideLed
+    ? `Minimum supported box outside width: ${ENGINEERING_LIMITS.design.boxWidth.minimum} mm.`
+    : `The calculated box outside width must be at least ${ENGINEERING_LIMITS.design.boxWidth.minimum} mm.`;
+
+  const depthRequirement = outsideLed
+    ? `Minimum supported box outside depth: ${ENGINEERING_LIMITS.design.boxDepth.minimum} mm.`
+    : `The calculated box outside depth must be at least ${ENGINEERING_LIMITS.design.boxDepth.minimum} mm.`;
+
+  const trayHeightRequirement = outsideLed
+    ? `Minimum supported tray outside height: ${ENGINEERING_LIMITS.design.trayOutsideHeight.minimum} mm.`
+    : `Must produce a tray outside height of at least ${ENGINEERING_LIMITS.design.trayOutsideHeight.minimum} mm.`;
+
+  const minimumTrayHeightValidityBoundary =
     dimensionStrategy === "outside-led"
-      ? ENGINEERING_LIMITS.trayHeight.minimumOutsideExclusive
-      : ENGINEERING_LIMITS.trayHeight.minimumUsableExclusive;
+      ? ENGINEERING_LIMITS.validity.trayHeight.minimumOutsideExclusive
+      : ENGINEERING_LIMITS.validity.trayHeight.minimumUsableExclusive;
 
   const widthIsValid =
     requestedWidthValue !== null &&
     Number.isInteger(requestedWidthValue) &&
-    requestedWidthValue >= MIN_WIDTH;
+    requestedWidthValue >= minimumWidth;
 
   const depthIsValid =
     requestedDepthValue !== null &&
     Number.isInteger(requestedDepthValue) &&
-    requestedDepthValue >= MIN_DEPTH;
+    requestedDepthValue >= minimumDepth;
 
   const boxHeightIsValid =
     boxHeightValue !== null &&
@@ -108,7 +130,8 @@ export function useStorageDesignState() {
   const trayHeightIsValid =
     requestedTrayHeightValue !== null &&
     Number.isFinite(requestedTrayHeightValue) &&
-    requestedTrayHeightValue > minimumTrayHeightExclusive;
+    requestedTrayHeightValue > minimumTrayHeightValidityBoundary &&
+    requestedTrayHeightValue >= minimumTrayHeight;
 
   const widthHasError = requestedWidth !== "" && !widthIsValid;
   const depthHasError = requestedDepth !== "" && !depthIsValid;
@@ -450,10 +473,13 @@ export function useStorageDesignState() {
       boxHeight,
       requestedTrayHeight,
 
-      minWidth: MIN_WIDTH,
-      minDepth: MIN_DEPTH,
+      minWidth: minimumWidth,
+      minDepth: minimumDepth,
+      widthRequirement,
+      depthRequirement,
       minimumBoxHeight: MIN_STANDALONE_BOX_HEIGHT,
-      minimumTrayHeightExclusive,
+      minimumTrayHeight,
+      trayHeightRequirement,
 
       widthIsValid,
       depthIsValid,
