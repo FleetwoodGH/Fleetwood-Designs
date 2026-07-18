@@ -1,7 +1,7 @@
 import { calculateOutsideLed } from "@/lib/engineering/calculations";
-import type { CalculationInput } from "@/lib/engineering/types";
+import type { StorageSystemCalculationInput } from "@/lib/engineering/types";
 
-const testInput: CalculationInput = {
+const testInput: StorageSystemCalculationInput = {
   buildType: "system",
   trayType: "dividers",
   dividerLayout: "equal",
@@ -11,7 +11,10 @@ const testInput: CalculationInput = {
   strategy: "outside-led",
   width: 125,
   depth: 80,
-  height: 80,
+  heights: {
+    trayHeight: 25,
+    lidHeight: 13,
+  },
 };
 
 export default function EngineeringTestPage() {
@@ -53,6 +56,16 @@ export default function EngineeringTestPage() {
               {testInput.rows} × {testInput.columns}
             </dd>
           </div>
+
+          <div>
+            <dt className="text-sm text-neutral-500">Tray height</dt>
+            <dd className="font-medium">{testInput.heights.trayHeight} mm</dd>
+          </div>
+
+          <div>
+            <dt className="text-sm text-neutral-500">Lid height</dt>
+            <dd className="font-medium">{testInput.heights.lidHeight} mm</dd>
+          </div>
         </dl>
       </section>
 
@@ -90,6 +103,16 @@ export default function EngineeringTestPage() {
               <dt className="text-sm text-neutral-500">One compartment</dt>
               <dd className="mt-1 font-medium">
                 {result.compartment.width} × {result.compartment.depth} mm
+              </dd>
+            </div>
+          )}
+
+          {result.heights && (
+            <div>
+              <dt className="text-sm text-neutral-500">System heights</dt>
+              <dd className="mt-1 font-medium">
+                Base {result.heights.baseHeight} mm · closed outside{" "}
+                {result.heights.outsideHeight} mm
               </dd>
             </div>
           )}

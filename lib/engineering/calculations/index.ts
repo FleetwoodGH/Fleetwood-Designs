@@ -12,6 +12,8 @@ import {
   calculateTrayUsableWidthFromCompartment,
 } from "@/lib/engineering/calculations/divider";
 
+import { calculateStorageSystemHeights } from "@/lib/engineering/calculations/height";
+
 import {
   calculateBoxInsideDepthFromTray,
   calculateBoxInsideWidthFromTray,
@@ -53,8 +55,6 @@ export function calculateOutsideLed(
     );
   }
 
-  const warnings = ["Height calculations are not yet implemented."];
-
   const boxInsideWidth = calculateBoxInsideWidth(input.width);
   const boxInsideDepth = calculateBoxInsideDepth(input.depth);
 
@@ -65,13 +65,17 @@ export function calculateOutsideLed(
   }
 
   if (input.buildType === "box") {
+    const warnings = [
+      "Standalone box inside-height calculations are not yet implemented.",
+    ];
+
     return {
       strategy: input.strategy,
 
       box: {
         outsideWidth: roundDimension(input.width),
         outsideDepth: roundDimension(input.depth),
-        outsideHeight: roundDimension(input.height),
+        outsideHeight: roundDimension(input.boxHeight),
 
         insideWidth: boxInsideWidth,
         insideDepth: boxInsideDepth,
@@ -81,6 +85,7 @@ export function calculateOutsideLed(
       tray: null,
       compartment: null,
       dividers: null,
+      heights: null,
 
       trayNumber: 0,
       rows: null,
@@ -89,6 +94,11 @@ export function calculateOutsideLed(
       warnings,
     };
   }
+
+  const heights = calculateStorageSystemHeights(
+    input.heights,
+    input.trayNumber,
+  );
 
   const trayOutsideWidth = calculateTrayOutsideWidth(boxInsideWidth);
   const trayOutsideDepth = calculateTrayOutsideDepth(boxInsideDepth);
@@ -99,6 +109,7 @@ export function calculateOutsideLed(
   const tray = createTrayDimensions(
     trayOutsideWidth,
     trayOutsideDepth,
+    heights.trayHeight,
     trayUsableWidth,
     trayUsableDepth,
   );
@@ -130,7 +141,7 @@ export function calculateOutsideLed(
     box: {
       outsideWidth: roundDimension(input.width),
       outsideDepth: roundDimension(input.depth),
-      outsideHeight: roundDimension(input.height),
+      outsideHeight: heights.outsideHeight,
 
       insideWidth: boxInsideWidth,
       insideDepth: boxInsideDepth,
@@ -140,12 +151,13 @@ export function calculateOutsideLed(
     tray,
     compartment,
     dividers,
+    heights,
 
     trayNumber: input.trayNumber,
     rows: equalGridSelected ? input.rows : null,
     columns: equalGridSelected ? input.columns : null,
 
-    warnings,
+    warnings: [],
   };
 }
 
@@ -164,9 +176,10 @@ export function calculateUsableSpaceLed(
     );
   }
 
-  const warnings = ["Height calculations are not yet implemented."];
-
   if (input.buildType === "box") {
+    const warnings = [
+      "Standalone box inside-height calculations are not yet implemented.",
+    ];
     const boxOutsideWidth = calculateBoxOutsideWidth(input.width);
     const boxOutsideDepth = calculateBoxOutsideDepth(input.depth);
 
@@ -176,7 +189,7 @@ export function calculateUsableSpaceLed(
       box: {
         outsideWidth: boxOutsideWidth,
         outsideDepth: boxOutsideDepth,
-        outsideHeight: roundDimension(input.height),
+        outsideHeight: roundDimension(input.boxHeight),
 
         insideWidth: roundDimension(input.width),
         insideDepth: roundDimension(input.depth),
@@ -186,6 +199,7 @@ export function calculateUsableSpaceLed(
       tray: null,
       compartment: null,
       dividers: null,
+      heights: null,
 
       trayNumber: 0,
       rows: null,
@@ -194,6 +208,11 @@ export function calculateUsableSpaceLed(
       warnings,
     };
   }
+
+  const heights = calculateStorageSystemHeights(
+    input.heights,
+    input.trayNumber,
+  );
 
   const equalGridSelected =
     input.trayType === "dividers" && input.dividerLayout === "equal";
@@ -239,6 +258,7 @@ export function calculateUsableSpaceLed(
   const tray = createTrayDimensions(
     trayOutsideWidth,
     trayOutsideDepth,
+    heights.trayHeight,
     trayUsableWidth,
     trayUsableDepth,
   );
@@ -258,7 +278,7 @@ export function calculateUsableSpaceLed(
     box: {
       outsideWidth: boxOutsideWidth,
       outsideDepth: boxOutsideDepth,
-      outsideHeight: roundDimension(input.height),
+      outsideHeight: heights.outsideHeight,
 
       insideWidth: boxInsideWidth,
       insideDepth: boxInsideDepth,
@@ -268,12 +288,13 @@ export function calculateUsableSpaceLed(
     tray,
     compartment,
     dividers,
+    heights,
 
     trayNumber: input.trayNumber,
     rows: equalGridSelected ? input.rows : null,
     columns: equalGridSelected ? input.columns : null,
 
-    warnings,
+    warnings: [],
   };
 }
 
@@ -297,5 +318,6 @@ export function calculateStorageDesign(
 
 export * from "./box";
 export * from "./divider";
+export * from "./height";
 export * from "./tray";
 export * from "./validation";

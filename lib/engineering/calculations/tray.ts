@@ -75,12 +75,14 @@ export function calculateTrayOutsideDepthFromUsableDepth(
 export function createTrayDimensions(
   outsideWidth: number,
   outsideDepth: number,
+  outsideHeight: number,
   usableWidth: number,
   usableDepth: number,
 ): TrayDimensions {
   if (
     outsideWidth <= 0 ||
     outsideDepth <= 0 ||
+    outsideHeight <= 0 ||
     usableWidth <= 0 ||
     usableDepth <= 0
   ) {
@@ -92,7 +94,7 @@ export function createTrayDimensions(
   return {
     outsideWidth: roundDimension(outsideWidth),
     outsideDepth: roundDimension(outsideDepth),
-    outsideHeight: null,
+    outsideHeight: roundDimension(outsideHeight),
 
     usableWidth: roundDimension(usableWidth),
     usableDepth: roundDimension(usableDepth),

@@ -1,9 +1,12 @@
+import BoxHeightInput from "@/components/BoxHeightInput";
 import DecisionStep from "@/components/DecisionStep";
 import DimensionInputs from "@/components/DimensionInputs";
+import StorageSystemHeightInputs from "@/components/StorageSystemHeightInputs";
 
 import { dimensionStrategyOptions } from "@/components/storage-design-assistant/workflowOptions";
 
 import type {
+  BuildType,
   DimensionStrategy,
   DimensionTarget,
 } from "@/components/storage-design-assistant/types";
@@ -13,12 +16,13 @@ import {
   getDimensionDescription,
   getDimensionStrategyDescription,
   getDimensionTitle,
-  getHeightLabel,
+  getBoxHeightLabel,
   getWidthLabel,
 } from "@/components/storage-design-assistant/workflowText";
 
 type DimensionWorkflowProps = {
   designPhaseComplete: boolean;
+  buildType: BuildType;
 
   dimensionStrategy: DimensionStrategy;
   dimensionTarget: DimensionTarget;
@@ -29,28 +33,37 @@ type DimensionWorkflowProps = {
 
   requestedWidth: string;
   requestedDepth: string;
-  requestedHeight: string;
+  boxHeight: string;
+  trayHeight: string;
+  lidHeight: string;
 
   minWidth: number;
   minDepth: number;
-  minHeight: number;
+  minimumEngineeringHeight: number;
 
   widthIsValid: boolean;
   depthIsValid: boolean;
-  heightIsValid: boolean;
+  boxHeightIsValid: boolean;
+  trayHeightIsValid: boolean;
+  lidHeightIsValid: boolean;
 
   widthHasError: boolean;
   depthHasError: boolean;
-  heightHasError: boolean;
+  boxHeightHasError: boolean;
+  trayHeightHasError: boolean;
+  lidHeightHasError: boolean;
 
   onDimensionStrategySelect: (optionId: string) => void;
   onWidthChange: (value: string) => void;
   onDepthChange: (value: string) => void;
-  onHeightChange: (value: string) => void;
+  onBoxHeightChange: (value: string) => void;
+  onTrayHeightChange: (value: string) => void;
+  onLidHeightChange: (value: string) => void;
 };
 
 export default function DimensionWorkflow({
   designPhaseComplete,
+  buildType,
   dimensionStrategy,
   dimensionTarget,
   trayNumber,
@@ -58,20 +71,28 @@ export default function DimensionWorkflow({
   columns,
   requestedWidth,
   requestedDepth,
-  requestedHeight,
+  boxHeight,
+  trayHeight,
+  lidHeight,
   minWidth,
   minDepth,
-  minHeight,
+  minimumEngineeringHeight,
   widthIsValid,
   depthIsValid,
-  heightIsValid,
+  boxHeightIsValid,
+  trayHeightIsValid,
+  lidHeightIsValid,
   widthHasError,
   depthHasError,
-  heightHasError,
+  boxHeightHasError,
+  trayHeightHasError,
+  lidHeightHasError,
   onDimensionStrategySelect,
   onWidthChange,
   onDepthChange,
-  onHeightChange,
+  onBoxHeightChange,
+  onTrayHeightChange,
+  onLidHeightChange,
 }: DimensionWorkflowProps) {
   const textContext = {
     trayNumber,
@@ -93,8 +114,8 @@ export default function DimensionWorkflow({
             </h2>
 
             <p className="mt-3 max-w-2xl leading-7 text-neutral-600">
-              Choose whether the overall outside size or the required usable
-              space should determine the design.
+              Choose whether the overall outside width and depth or the
+              required usable width and depth should determine the design.
             </p>
           </header>
 
@@ -127,22 +148,41 @@ export default function DimensionWorkflow({
           description={getDimensionDescription(dimensionTarget, textContext)}
           width={requestedWidth}
           depth={requestedDepth}
-          height={requestedHeight}
           widthLabel={getWidthLabel(dimensionTarget)}
           depthLabel={getDepthLabel(dimensionTarget)}
-          heightLabel={getHeightLabel(dimensionTarget)}
           minWidth={minWidth}
           minDepth={minDepth}
-          minHeight={minHeight}
           widthIsValid={widthIsValid}
           depthIsValid={depthIsValid}
-          heightIsValid={heightIsValid}
           widthHasError={widthHasError}
           depthHasError={depthHasError}
-          heightHasError={heightHasError}
           onWidthChange={onWidthChange}
           onDepthChange={onDepthChange}
-          onHeightChange={onHeightChange}
+        />
+      )}
+
+      {depthIsValid && buildType === "box" && (
+        <BoxHeightInput
+          boxHeight={boxHeight}
+          boxHeightLabel={getBoxHeightLabel(dimensionTarget)}
+          minimumHeight={minimumEngineeringHeight}
+          boxHeightIsValid={boxHeightIsValid}
+          boxHeightHasError={boxHeightHasError}
+          onBoxHeightChange={onBoxHeightChange}
+        />
+      )}
+
+      {depthIsValid && buildType === "system" && (
+        <StorageSystemHeightInputs
+          trayHeight={trayHeight}
+          lidHeight={lidHeight}
+          minimumHeight={minimumEngineeringHeight}
+          trayHeightIsValid={trayHeightIsValid}
+          lidHeightIsValid={lidHeightIsValid}
+          trayHeightHasError={trayHeightHasError}
+          lidHeightHasError={lidHeightHasError}
+          onTrayHeightChange={onTrayHeightChange}
+          onLidHeightChange={onLidHeightChange}
         />
       )}
     </>

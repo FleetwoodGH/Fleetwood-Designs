@@ -18,7 +18,9 @@ import type { CalculationInput } from "@/lib/engineering/types";
 
 const MIN_WIDTH = 20;
 const MIN_DEPTH = 20;
-const MIN_HEIGHT = 10;
+const MIN_ENGINEERING_HEIGHT = 1;
+const DEFAULT_TRAY_HEIGHT = "25";
+const DEFAULT_LID_HEIGHT = "13";
 
 function isWholeNumber(value: string) {
   return value === "" || /^\d+$/.test(value);
@@ -45,7 +47,9 @@ export function useStorageDesignState() {
 
   const [requestedWidth, setRequestedWidth] = useState<string>("");
   const [requestedDepth, setRequestedDepth] = useState<string>("");
-  const [requestedHeight, setRequestedHeight] = useState<string>("");
+  const [boxHeight, setBoxHeight] = useState<string>("");
+  const [trayHeight, setTrayHeight] = useState<string>(DEFAULT_TRAY_HEIGHT);
+  const [lidHeight, setLidHeight] = useState<string>(DEFAULT_LID_HEIGHT);
 
   const equalGridSelected =
     trayType === "dividers" && dividerLayout === "equal";
@@ -68,8 +72,9 @@ export function useStorageDesignState() {
   const requestedDepthValue =
     requestedDepth === "" ? null : Number(requestedDepth);
 
-  const requestedHeightValue =
-    requestedHeight === "" ? null : Number(requestedHeight);
+  const boxHeightValue = boxHeight === "" ? null : Number(boxHeight);
+  const trayHeightValue = trayHeight === "" ? null : Number(trayHeight);
+  const lidHeightValue = lidHeight === "" ? null : Number(lidHeight);
 
   const widthIsValid =
     requestedWidthValue !== null &&
@@ -81,23 +86,35 @@ export function useStorageDesignState() {
     Number.isInteger(requestedDepthValue) &&
     requestedDepthValue >= MIN_DEPTH;
 
-  const heightIsValid =
-    requestedHeightValue !== null &&
-    Number.isInteger(requestedHeightValue) &&
-    requestedHeightValue >= MIN_HEIGHT;
+  const boxHeightIsValid =
+    boxHeightValue !== null &&
+    Number.isInteger(boxHeightValue) &&
+    boxHeightValue >= MIN_ENGINEERING_HEIGHT;
+
+  const trayHeightIsValid =
+    trayHeightValue !== null &&
+    Number.isInteger(trayHeightValue) &&
+    trayHeightValue >= MIN_ENGINEERING_HEIGHT;
+
+  const lidHeightIsValid =
+    lidHeightValue !== null &&
+    Number.isInteger(lidHeightValue) &&
+    lidHeightValue >= MIN_ENGINEERING_HEIGHT;
 
   const widthHasError = requestedWidth !== "" && !widthIsValid;
   const depthHasError = requestedDepth !== "" && !depthIsValid;
-  const heightHasError = requestedHeight !== "" && !heightIsValid;
+  const boxHeightHasError = boxHeight !== "" && !boxHeightIsValid;
+  const trayHeightHasError = trayHeight !== "" && !trayHeightIsValid;
+  const lidHeightHasError = lidHeight !== "" && !lidHeightIsValid;
 
   const calculationState: CalculationState = (() => {
     if (
-      !heightIsValid ||
+      !widthIsValid ||
+      !depthIsValid ||
       buildType === null ||
       dimensionStrategy === null ||
       requestedWidthValue === null ||
-      requestedDepthValue === null ||
-      requestedHeightValue === null
+      requestedDepthValue === null
     ) {
       return {
         result: null,
@@ -105,32 +122,60 @@ export function useStorageDesignState() {
       };
     }
 
-    if (buildType === "system" && trayType === null) {
-      return {
-        result: null,
-        error: null,
+    let calculationInput: CalculationInput;
+
+    if (buildType === "box") {
+      if (!boxHeightIsValid || boxHeightValue === null) {
+        return {
+          result: null,
+          error: null,
+        };
+      }
+
+      calculationInput = {
+        buildType,
+        strategy: dimensionStrategy,
+        width: requestedWidthValue,
+        depth: requestedDepthValue,
+        boxHeight: boxHeightValue,
+      };
+    } else {
+      if (
+        trayType === null ||
+        !trayHeightIsValid ||
+        !lidHeightIsValid ||
+        trayHeightValue === null ||
+        lidHeightValue === null
+      ) {
+        return {
+          result: null,
+          error: null,
+        };
+      }
+
+      if (trayType === "dividers" && dividerLayout === null) {
+        return {
+          result: null,
+          error: null,
+        };
+      }
+
+      calculationInput = {
+        buildType,
+        trayType,
+        trayNumber,
+        rows,
+        columns,
+        strategy: dimensionStrategy,
+        width: requestedWidthValue,
+        depth: requestedDepthValue,
+        heights: {
+          trayHeight: trayHeightValue,
+          lidHeight: lidHeightValue,
+        },
+        ...(dividerLayout !== null ? { dividerLayout } : {}),
       };
     }
-
-    if (trayType === "dividers" && dividerLayout === null) {
-      return {
-        result: null,
-        error: null,
-      };
-    }
-
-    const calculationInput: CalculationInput = {
-      buildType,
-      trayNumber,
-      rows,
-      columns,
-      strategy: dimensionStrategy,
-      width: requestedWidthValue,
-      depth: requestedDepthValue,
-      height: requestedHeightValue,
-      ...(trayType !== null ? { trayType } : {}),
-      ...(dividerLayout !== null ? { dividerLayout } : {}),
-    };
 
     try {
       return {
@@ -148,23 +193,29 @@ export function useStorageDesignState() {
     }
   })();
 
-  function resetHeight() {
-    setRequestedHeight("");
+  function resetBoxHeight() {
+    setBoxHeight("");
   }
 
-  function resetDepthAndHeight() {
+  function resetDepth() {
     setRequestedDepth("");
-    resetHeight();
   }
 
-  function resetDimensionParameters() {
+  function resetPlanarDimensions() {
     setRequestedWidth("");
-    resetDepthAndHeight();
+    resetDepth();
   }
 
   function resetDimensions() {
     setDimensionStrategy(null);
-    resetDimensionParameters();
+    resetPlanarDimensions();
+    resetBoxHeight();
+  }
+
+  function resetHeightConfiguration() {
+    resetBoxHeight();
+    setTrayHeight(DEFAULT_TRAY_HEIGHT);
+    setLidHeight(DEFAULT_LID_HEIGHT);
   }
 
   function resetGrid() {
@@ -188,6 +239,7 @@ export function useStorageDesignState() {
 
     setBuildType(optionId);
     setTrayType(null);
+    resetHeightConfiguration();
     resetTrayConfiguration();
   }
 
@@ -231,7 +283,11 @@ export function useStorageDesignState() {
     }
 
     setDimensionStrategy(optionId);
-    resetDimensionParameters();
+    resetPlanarDimensions();
+
+    if (buildType === "box") {
+      resetBoxHeight();
+    }
   }
 
   function handleRowsChange(value: number) {
@@ -266,7 +322,11 @@ export function useStorageDesignState() {
     }
 
     setRequestedWidth(value);
-    resetDepthAndHeight();
+    resetDepth();
+
+    if (buildType === "box") {
+      resetBoxHeight();
+    }
   }
 
   function handleDepthChange(value: string) {
@@ -275,15 +335,34 @@ export function useStorageDesignState() {
     }
 
     setRequestedDepth(value);
-    resetHeight();
+
+    if (buildType === "box") {
+      resetBoxHeight();
+    }
   }
 
-  function handleHeightChange(value: string) {
+  function handleBoxHeightChange(value: string) {
     if (!isWholeNumber(value)) {
       return;
     }
 
-    setRequestedHeight(value);
+    setBoxHeight(value);
+  }
+
+  function handleTrayHeightChange(value: string) {
+    if (!isWholeNumber(value)) {
+      return;
+    }
+
+    setTrayHeight(value);
+  }
+
+  function handleLidHeightChange(value: string) {
+    if (!isWholeNumber(value)) {
+      return;
+    }
+
+    setLidHeight(value);
   }
 
   function getDimensionTarget(): DimensionTarget {
@@ -345,6 +424,7 @@ export function useStorageDesignState() {
 
     dimensionWorkflow: {
       designPhaseComplete,
+      buildType,
 
       dimensionStrategy,
       dimensionTarget,
@@ -355,24 +435,32 @@ export function useStorageDesignState() {
 
       requestedWidth,
       requestedDepth,
-      requestedHeight,
+      boxHeight,
+      trayHeight,
+      lidHeight,
 
       minWidth: MIN_WIDTH,
       minDepth: MIN_DEPTH,
-      minHeight: MIN_HEIGHT,
+      minimumEngineeringHeight: MIN_ENGINEERING_HEIGHT,
 
       widthIsValid,
       depthIsValid,
-      heightIsValid,
+      boxHeightIsValid,
+      trayHeightIsValid,
+      lidHeightIsValid,
 
       widthHasError,
       depthHasError,
-      heightHasError,
+      boxHeightHasError,
+      trayHeightHasError,
+      lidHeightHasError,
 
       onDimensionStrategySelect: handleDimensionStrategySelect,
       onWidthChange: handleWidthChange,
       onDepthChange: handleDepthChange,
-      onHeightChange: handleHeightChange,
+      onBoxHeightChange: handleBoxHeightChange,
+      onTrayHeightChange: handleTrayHeightChange,
+      onLidHeightChange: handleLidHeightChange,
     },
 
     calculationSection: {

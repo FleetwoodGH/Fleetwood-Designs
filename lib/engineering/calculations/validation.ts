@@ -17,7 +17,14 @@ function requirePositiveInteger(value: number, parameterName: string) {
 export function validateCalculationInput(input: CalculationInput) {
   requirePositiveValue(input.width, "Width");
   requirePositiveValue(input.depth, "Depth");
-  requirePositiveValue(input.height, "Height");
+
+  if (input.buildType === "box") {
+    requirePositiveValue(input.boxHeight, "Box height");
+    return;
+  }
+
+  requirePositiveValue(input.heights.trayHeight, "Tray height");
+  requirePositiveValue(input.heights.lidHeight, "Lid height");
 
   requirePositiveInteger(input.rows, "Rows");
   requirePositiveInteger(input.columns, "Columns");
@@ -40,21 +47,15 @@ export function validateCalculationInput(input: CalculationInput) {
     );
   }
 
-  if (input.buildType === "system") {
-    requirePositiveInteger(input.trayNumber, "Tray number");
+  requirePositiveInteger(input.trayNumber, "Tray number");
 
-    if (
-      input.trayNumber < ENGINEERING_LIMITS.trays.minimum ||
-      input.trayNumber > ENGINEERING_LIMITS.trays.maximum
-    ) {
-      throw new Error(
-        `Tray number must be between ${ENGINEERING_LIMITS.trays.minimum} and ${ENGINEERING_LIMITS.trays.maximum}.`,
-      );
-    }
-
-    if (!input.trayType) {
-      throw new Error("Tray type is required for a storage system.");
-    }
+  if (
+    input.trayNumber < ENGINEERING_LIMITS.trays.minimum ||
+    input.trayNumber > ENGINEERING_LIMITS.trays.maximum
+  ) {
+    throw new Error(
+      `Tray number must be between ${ENGINEERING_LIMITS.trays.minimum} and ${ENGINEERING_LIMITS.trays.maximum}.`,
+    );
   }
 
   if (input.trayType === "dividers" && !input.dividerLayout) {

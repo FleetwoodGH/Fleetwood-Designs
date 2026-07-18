@@ -58,14 +58,14 @@ export const dimensionStrategyOptions: DecisionOption[] = [
     id: "outside-led",
     title: "Overall Outside Size",
     description:
-      "Start with the maximum outside size of the complete storage solution. Internal dimensions will be calculated automatically.",
+      "Start with the maximum outside width and depth. Internal dimensions will be calculated automatically.",
     icon: "⬜",
   },
   {
     id: "usable-space-led",
     title: "Required Usable Space",
     description:
-      "Start with the usable space required for the stored items. The overall outside dimensions will be calculated automatically.",
+      "Start with the usable width and depth required for the stored items. The outside width and depth will be calculated automatically.",
     icon: "◻️",
   },
 ];
