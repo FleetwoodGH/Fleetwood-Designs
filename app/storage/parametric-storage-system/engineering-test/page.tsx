@@ -1,8 +1,8 @@
 import {
+  calculateMinimumUsableTrayHeight,
   calculateOutsideLed,
   calculateUsableSpaceLed,
 } from "@/lib/engineering/calculations";
-import { ENGINEERING_LIMITS } from "@/lib/engineering/engineeringConstants";
 import { generateMakerWorldParameters } from "@/lib/engineering/makerworld";
 import type {
   CalculationResult,
@@ -35,18 +35,57 @@ const usableSpaceLedInput: UsableSpaceLedStorageSystemCalculationInput = {
   },
 };
 
+const openOutsideLedInput: OutsideLedStorageSystemCalculationInput = {
+  ...outsideLedInput,
+  trayType: "open",
+};
+
+const openUsableSpaceLedInput: UsableSpaceLedStorageSystemCalculationInput = {
+  ...usableSpaceLedInput,
+  trayType: "open",
+  width: 78,
+  depth: 30,
+  heights: {
+    usableTrayHeight: 20.5,
+  },
+};
+
+const liddedOutsideLedInput: OutsideLedStorageSystemCalculationInput = {
+  ...outsideLedInput,
+  trayType: "lid",
+};
+
+const liddedUsableSpaceLedInput: UsableSpaceLedStorageSystemCalculationInput = {
+  ...usableSpaceLedInput,
+  trayType: "lid",
+  width: 78,
+  depth: 30,
+};
+
 const outsideLedResult = calculateOutsideLed(outsideLedInput);
 const usableSpaceLedResult = calculateUsableSpaceLed(usableSpaceLedInput);
+const openOutsideLedResult = calculateOutsideLed(openOutsideLedInput);
+const openUsableSpaceLedResult = calculateUsableSpaceLed(
+  openUsableSpaceLedInput,
+);
+const liddedOutsideLedResult = calculateOutsideLed(liddedOutsideLedInput);
+const liddedUsableSpaceLedResult = calculateUsableSpaceLed(
+  liddedUsableSpaceLedInput,
+);
 const makerWorldParameters = generateMakerWorldParameters(outsideLedResult);
 
-function validateHeightResult(result: CalculationResult, testName: string) {
+function validateHeightResult(
+  result: CalculationResult,
+  testName: string,
+  expectedUsableTrayHeight: number,
+) {
   if (!result.heights || !result.tray) {
     throw new Error(`${testName} did not produce storage-system heights.`);
   }
 
   const expectedValues = {
     trayOutsideHeight: 25,
-    usableTrayHeight: 18.5,
+    usableTrayHeight: expectedUsableTrayHeight,
     lidHeight: 13,
     baseHeight: 72,
     closedOutsideHeight: 85,
@@ -70,8 +109,36 @@ function validateHeightResult(result: CalculationResult, testName: string) {
   }
 }
 
-validateHeightResult(outsideLedResult, "Outside-led height validation");
-validateHeightResult(usableSpaceLedResult, "Usable-space-led height validation");
+validateHeightResult(
+  outsideLedResult,
+  "Divider-tray outside-led height validation",
+  18.5,
+);
+validateHeightResult(
+  usableSpaceLedResult,
+  "Divider-tray usable-space-led height validation",
+  18.5,
+);
+validateHeightResult(
+  liddedOutsideLedResult,
+  "Lidded-tray outside-led height validation",
+  18.5,
+);
+validateHeightResult(
+  liddedUsableSpaceLedResult,
+  "Lidded-tray usable-space-led height validation",
+  18.5,
+);
+validateHeightResult(
+  openOutsideLedResult,
+  "Open-tray outside-led height validation",
+  20.5,
+);
+validateHeightResult(
+  openUsableSpaceLedResult,
+  "Open-tray usable-space-led height validation",
+  20.5,
+);
 
 if (!outsideLedResult.heights || !outsideLedResult.dividers) {
   throw new Error(
@@ -250,7 +317,7 @@ if (minimumOutsideHeightResult.heights?.trayOutsideHeight !== 15) {
 }
 
 const minimumUsableTrayHeight =
-  ENGINEERING_LIMITS.design.trayUsableHeight.minimum;
+  calculateMinimumUsableTrayHeight(outsideLedInput.trayType);
 
 validateRejectedCalculation(
   () =>
@@ -272,6 +339,28 @@ if (minimumUsableHeightResult.heights?.trayOutsideHeight !== 15) {
   );
 }
 
+const minimumOpenUsableTrayHeight = calculateMinimumUsableTrayHeight("open");
+
+validateRejectedCalculation(
+  () =>
+    calculateUsableSpaceLed({
+      ...openUsableSpaceLedInput,
+      heights: { usableTrayHeight: minimumOpenUsableTrayHeight - 0.001 },
+    }),
+  "Tray outside height must be at least 15 mm",
+  "Open-tray usable height boundary validation",
+);
+const minimumOpenUsableHeightResult = calculateUsableSpaceLed({
+  ...openUsableSpaceLedInput,
+  heights: { usableTrayHeight: minimumOpenUsableTrayHeight },
+});
+
+if (minimumOpenUsableHeightResult.heights?.trayOutsideHeight !== 15) {
+  throw new Error(
+    "The open-tray usable height did not derive the 15 mm outside minimum.",
+  );
+}
+
 validateRejectedCalculation(
   () =>
     calculateOutsideLed({
@@ -280,6 +369,16 @@ validateRejectedCalculation(
     }),
   "must be greater than 6.5 mm",
   "Outside tray height validity validation",
+);
+
+validateRejectedCalculation(
+  () =>
+    calculateOutsideLed({
+      ...openOutsideLedInput,
+      heights: { trayOutsideHeight: 4.5 },
+    }),
+  "must be greater than 4.5 mm",
+  "Open-tray outside height validity validation",
 );
 
 export default function EngineeringTestPage() {
@@ -392,12 +491,11 @@ export default function EngineeringTestPage() {
         </h2>
 
         <p className="mt-2 text-emerald-800">
-          Both a 25 mm tray outside height and an 18.5 mm required usable tray
-          height produce a 25 mm outside tray, 18.5 mm usable tray, 72 mm
-          base, and 85 mm closed storage system with the centralized 13 mm
-          box lid. Width, depth, and tray-height design-limit boundaries also
-          passed for both dimension strategies. The MakerWorld parameter
-          mapping also matches the current CalculationResult.
+          Open trays convert 25 mm outside to 20.5 mm usable height, while
+          trays with lids retain the 18.5 mm usable height. Both variants and
+          both dimension strategies preserve the 72 mm base and 85 mm closed
+          storage-system heights. Design-limit boundaries and the MakerWorld
+          mapping also match the current CalculationResult.
         </p>
       </section>
     </main>

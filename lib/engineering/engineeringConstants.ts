@@ -40,9 +40,6 @@ export const ENGINEERING_LIMITS = {
 
     trayHeight: {
       minimumUsableExclusive: 0,
-      minimumOutsideExclusive:
-        ENGINEERING_CONSTANTS.tray.bottomThickness +
-        ENGINEERING_CONSTANTS.tray.lidHeightContribution,
     },
   },
 
@@ -59,12 +56,6 @@ export const ENGINEERING_LIMITS = {
       minimum: MINIMUM_FUSION_TRAY_OUTSIDE_HEIGHT,
     },
 
-    trayUsableHeight: {
-      minimum:
-        MINIMUM_FUSION_TRAY_OUTSIDE_HEIGHT -
-        ENGINEERING_CONSTANTS.tray.bottomThickness -
-        ENGINEERING_CONSTANTS.tray.lidHeightContribution,
-    },
   },
 
   grid: {

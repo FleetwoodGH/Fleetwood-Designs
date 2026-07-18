@@ -1,4 +1,5 @@
 import { ENGINEERING_LIMITS } from "@/lib/engineering/engineeringConstants";
+import { calculateTrayOutsideHeightValidityBoundary } from "@/lib/engineering/calculations/height";
 
 import type { CalculationInput } from "@/lib/engineering/types";
 
@@ -66,12 +67,12 @@ export function validateCalculationInput(input: CalculationInput) {
       "Tray outside height",
     );
 
-    if (
-      input.heights.trayOutsideHeight <=
-      ENGINEERING_LIMITS.validity.trayHeight.minimumOutsideExclusive
-    ) {
+    const minimumOutsideHeight =
+      calculateTrayOutsideHeightValidityBoundary(input.trayType);
+
+    if (input.heights.trayOutsideHeight <= minimumOutsideHeight) {
       throw new Error(
-        `Tray outside height must be greater than ${ENGINEERING_LIMITS.validity.trayHeight.minimumOutsideExclusive} mm.`,
+        `Tray outside height must be greater than ${minimumOutsideHeight} mm.`,
       );
     }
 

@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-import { calculateStorageDesign } from "@/lib/engineering/calculations";
+import {
+  calculateMinimumUsableTrayHeight,
+  calculateStorageDesign,
+  calculateTrayOutsideHeightValidityBoundary,
+} from "@/lib/engineering/calculations";
 import { ENGINEERING_LIMITS } from "@/lib/engineering/engineeringConstants";
 import { STORAGE_DESIGN_WORKFLOW_DEFAULTS } from "@/components/storage-design-assistant/workflowDefaults";
 
@@ -93,7 +97,9 @@ export function useStorageDesignState() {
 
   const minimumTrayHeight = outsideLed
     ? ENGINEERING_LIMITS.design.trayOutsideHeight.minimum
-    : ENGINEERING_LIMITS.design.trayUsableHeight.minimum;
+    : trayType === null
+      ? ENGINEERING_LIMITS.validity.trayHeight.minimumUsableExclusive
+      : calculateMinimumUsableTrayHeight(trayType);
 
   const widthRequirement = outsideLed
     ? `Minimum supported box outside width: ${ENGINEERING_LIMITS.design.boxWidth.minimum} mm.`
@@ -109,7 +115,9 @@ export function useStorageDesignState() {
 
   const minimumTrayHeightValidityBoundary =
     dimensionStrategy === "outside-led"
-      ? ENGINEERING_LIMITS.validity.trayHeight.minimumOutsideExclusive
+      ? trayType === null
+        ? ENGINEERING_LIMITS.validity.trayHeight.minimumUsableExclusive
+        : calculateTrayOutsideHeightValidityBoundary(trayType)
       : ENGINEERING_LIMITS.validity.trayHeight.minimumUsableExclusive;
 
   const widthIsValid =
