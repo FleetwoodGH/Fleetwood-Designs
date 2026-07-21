@@ -1,7 +1,5 @@
-import BoxHeightInput from "@/components/BoxHeightInput";
 import DecisionStep from "@/components/DecisionStep";
 import DimensionInputs from "@/components/DimensionInputs";
-import TrayHeightInput from "@/components/TrayHeightInput";
 
 import { dimensionStrategyOptions } from "@/components/storage-design-assistant/workflowOptions";
 
@@ -15,11 +13,8 @@ import {
   getDepthLabel,
   getDimensionDescription,
   getDimensionStrategyDescription,
-  getDimensionTitle,
   getBoxHeightLabel,
-  getTrayHeightDescription,
   getTrayHeightLabel,
-  getTrayHeightTitle,
   getWidthLabel,
 } from "@/components/storage-design-assistant/workflowText";
 
@@ -58,6 +53,7 @@ type DimensionWorkflowProps = {
   trayHeightHasError: boolean;
 
   onDimensionStrategySelect: (optionId: string) => void;
+  onDimensionConfirm: () => void;
   onWidthChange: (value: string) => void;
   onDepthChange: (value: string) => void;
   onBoxHeightChange: (value: string) => void;
@@ -92,6 +88,7 @@ export default function DimensionWorkflow({
   boxHeightHasError,
   trayHeightHasError,
   onDimensionStrategySelect,
+  onDimensionConfirm,
   onWidthChange,
   onDepthChange,
   onBoxHeightChange,
@@ -102,23 +99,25 @@ export default function DimensionWorkflow({
     rows,
     columns,
   };
+  const dimensionEntryComplete =
+    buildType === "box" ? boxHeightIsValid : trayHeightIsValid;
 
   return (
     <>
       {designPhaseComplete && (
-        <section className="space-y-8 border-t border-neutral-200 pt-12">
+        <section
+          className={`scroll-mt-20 space-y-5 border-t border-neutral-200 pt-8 ${
+            dimensionStrategy ? "" : "min-h-[calc(100vh-5rem)]"
+          }`}
+          data-workflow-section="dimensions"
+        >
           <header>
-            <p className="text-sm font-semibold uppercase tracking-widest text-neutral-500">
-              Phase 2
-            </p>
-
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900">
+            <h2 className="text-xl font-semibold tracking-tight text-neutral-900">
               Dimensions
             </h2>
 
-            <p className="mt-3 max-w-2xl leading-7 text-neutral-600">
-              Choose whether the overall outside width and depth or the
-              required usable width and depth should determine the design.
+            <p className="mt-1 max-w-2xl text-xs leading-4 text-neutral-500">
+              What dimensions should your storage solution have?
             </p>
           </header>
 
@@ -132,63 +131,60 @@ export default function DimensionWorkflow({
       )}
 
       {dimensionStrategy && (
-        <section className="rounded-xl border border-neutral-200 bg-neutral-50 p-6">
-          <h2 className="text-lg font-semibold text-neutral-900">
-            {dimensionStrategy === "outside-led"
-              ? "Overall outside size selected"
-              : "Required usable space selected"}
-          </h2>
-
-          <p className="mt-2 leading-7 text-neutral-600">
-            {getDimensionStrategyDescription(dimensionTarget, textContext)}
-          </p>
-        </section>
+        <p className="text-xs leading-4 text-neutral-500">
+          {getDimensionStrategyDescription(dimensionTarget, textContext)}
+        </p>
       )}
 
       {dimensionStrategy && (
-        <DimensionInputs
-          title={getDimensionTitle(dimensionTarget)}
-          description={getDimensionDescription(dimensionTarget, textContext)}
-          width={requestedWidth}
-          depth={requestedDepth}
-          widthLabel={getWidthLabel(dimensionTarget)}
-          depthLabel={getDepthLabel(dimensionTarget)}
-          minWidth={minWidth}
-          minDepth={minDepth}
-          widthRequirement={widthRequirement}
-          depthRequirement={depthRequirement}
-          widthIsValid={widthIsValid}
-          depthIsValid={depthIsValid}
-          widthHasError={widthHasError}
-          depthHasError={depthHasError}
-          onWidthChange={onWidthChange}
-          onDepthChange={onDepthChange}
-        />
-      )}
-
-      {depthIsValid && buildType === "box" && (
-        <BoxHeightInput
-          boxHeight={boxHeight}
-          boxHeightLabel={getBoxHeightLabel(dimensionTarget)}
-          minimumHeight={minimumBoxHeight}
-          boxHeightIsValid={boxHeightIsValid}
-          boxHeightHasError={boxHeightHasError}
-          onBoxHeightChange={onBoxHeightChange}
-        />
-      )}
-
-      {depthIsValid && buildType === "system" && (
-        <TrayHeightInput
-          title={getTrayHeightTitle(dimensionStrategy)}
-          description={getTrayHeightDescription(dimensionStrategy)}
-          label={getTrayHeightLabel(dimensionStrategy)}
-          value={requestedTrayHeight}
-          minimumHeight={minimumTrayHeight}
-          requirement={trayHeightRequirement}
-          isValid={trayHeightIsValid}
-          hasError={trayHeightHasError}
-          onChange={onTrayHeightChange}
-        />
+        <div
+          className={`scroll-mt-20 ${
+            dimensionEntryComplete ? "" : "min-h-[calc(100vh-5rem)]"
+          }`}
+          data-workflow-section="dimension-inputs"
+        >
+          <DimensionInputs
+            title={buildType === "box" ? "Box Dimensions" : "Tray Dimensions"}
+            description={getDimensionDescription(dimensionTarget, textContext)}
+            width={requestedWidth}
+            depth={requestedDepth}
+            height={buildType === "box" ? boxHeight : requestedTrayHeight}
+            widthLabel={getWidthLabel(dimensionTarget)}
+            depthLabel={getDepthLabel(dimensionTarget)}
+            heightLabel={
+              buildType === "box"
+                ? getBoxHeightLabel(dimensionTarget)
+                : getTrayHeightLabel(dimensionStrategy)
+            }
+            minWidth={minWidth}
+            minDepth={minDepth}
+            minHeight={
+              buildType === "box" ? minimumBoxHeight : minimumTrayHeight
+            }
+            widthRequirement={widthRequirement}
+            depthRequirement={depthRequirement}
+            heightRequirement={
+              buildType === "system" ? trayHeightRequirement : undefined
+            }
+            widthIsValid={widthIsValid}
+            depthIsValid={depthIsValid}
+            heightIsValid={
+              buildType === "box" ? boxHeightIsValid : trayHeightIsValid
+            }
+            widthHasError={widthHasError}
+            depthHasError={depthHasError}
+            heightHasError={
+              buildType === "box" ? boxHeightHasError : trayHeightHasError
+            }
+            heightInputMode={buildType === "box" ? "numeric" : "decimal"}
+            onWidthChange={onWidthChange}
+            onDepthChange={onDepthChange}
+            onHeightChange={
+              buildType === "box" ? onBoxHeightChange : onTrayHeightChange
+            }
+            onConfirm={onDimensionConfirm}
+          />
+        </div>
       )}
     </>
   );

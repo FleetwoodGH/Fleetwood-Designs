@@ -12,18 +12,18 @@ export default function DecisionInput({
   children,
 }: DecisionInputProps) {
   return (
-    <section className="rounded-2xl border border-neutral-200 bg-white p-6">
-      <h2 className="text-2xl font-semibold tracking-tight text-neutral-900">
+    <section className="rounded-xl border border-neutral-200 bg-white p-4 sm:p-5">
+      <h2 className="text-xl font-semibold tracking-tight text-neutral-900">
         {title}
       </h2>
 
       {description && (
-        <p className="mt-2 max-w-2xl leading-7 text-neutral-600">
+        <p className="mt-1 max-w-2xl text-xs leading-4 text-neutral-500">
           {description}
         </p>
       )}
 
-      <div className="mt-6">{children}</div>
+      <div className="mt-4">{children}</div>
     </section>
   );
 }

@@ -78,98 +78,115 @@ export default function DesignWorkflow({
       />
 
       {buildType === "system" && (
-        <DecisionStep
-          question="Which type of tray would you like to use?"
-          options={trayOptions}
-          selectedOption={trayType}
-          onSelect={onTrayTypeSelect}
-        />
+        <div
+          className={`scroll-mt-20 ${
+            trayType ? "" : "min-h-[calc(100vh-5rem)]"
+          }`}
+          data-workflow-section="tray-type"
+        >
+          <DecisionStep
+            question="Which type of tray would you like to use?"
+            options={trayOptions}
+            selectedOption={trayType}
+            columns={3}
+            onSelect={onTrayTypeSelect}
+          />
+        </div>
       )}
 
       {buildType === "box" && (
-        <section className="rounded-xl border border-neutral-200 bg-neutral-50 p-6">
-          <h2 className="text-lg font-semibold text-neutral-900">
-            Storage box selected
-          </h2>
-
-          <p className="mt-2 text-neutral-600">
-            Continue below to determine whether the outside size or the required
-            usable space should lead the design.
-          </p>
-        </section>
+        <p className="text-xs leading-4 text-neutral-500">
+          Storage Box selected. Next, choose the sizing approach.
+        </p>
       )}
 
       {buildType === "system" && trayType && (
-        <TrayNumberInput
-          value={trayNumber}
-          min={trayMinimum}
-          max={trayMaximum}
-          confirmed={trayNumberConfirmed}
-          onChange={onTrayNumberChange}
-          onConfirm={onTrayNumberConfirm}
-        />
+        <div
+          className={`scroll-mt-20 ${
+            trayNumberConfirmed ? "" : "min-h-[calc(100vh-5rem)]"
+          }`}
+          data-workflow-section="tray-number"
+        >
+          <TrayNumberInput
+            value={trayNumber}
+            min={trayMinimum}
+            max={trayMaximum}
+            confirmed={trayNumberConfirmed}
+            onChange={onTrayNumberChange}
+            onConfirm={onTrayNumberConfirm}
+          />
+        </div>
       )}
 
       {trayType === "dividers" && trayNumberConfirmed && (
-        <DecisionStep
-          question="How would you like to organise the compartments?"
-          options={dividerLayoutOptions}
-          selectedOption={dividerLayout}
-          onSelect={onDividerLayoutSelect}
-        />
+        <div
+          className={`scroll-mt-20 ${dividerLayout ? "" : "min-h-[calc(100vh-5rem)]"}`}
+          data-workflow-section="divider-layout"
+        >
+          <DecisionStep
+            question="How would you like to organise the compartments?"
+            options={dividerLayoutOptions}
+            selectedOption={dividerLayout}
+            onSelect={onDividerLayoutSelect}
+          />
+        </div>
       )}
 
       {trayType && trayType !== "dividers" && trayNumberConfirmed && (
-        <section className="rounded-xl border border-neutral-200 bg-neutral-50 p-6">
-          <h2 className="text-lg font-semibold text-neutral-900">
-            Tray configuration complete
-          </h2>
-
-          <p className="mt-2 text-neutral-600">
-            The storage system will contain {trayNumber}{" "}
-            {trayNumber === 1 ? "tray" : "trays"}. Continue below to configure
-            the dimensions.
-          </p>
-        </section>
+        <p className="text-xs leading-4 text-neutral-500">
+          Configuration complete: {trayNumber}{" "}
+          {trayNumber === 1 ? "tray" : "trays"}.
+        </p>
       )}
 
       {equalGridSelected && trayNumberConfirmed && (
-        <EqualGridInput
-          rows={rows}
-          columns={columns}
-          min={gridMinimum}
-          max={gridMaximum}
-          confirmed={gridConfirmed}
-          onRowsChange={onRowsChange}
-          onColumnsChange={onColumnsChange}
-          onConfirm={onGridConfirm}
-        />
+        <div
+          className={`scroll-mt-20 ${
+            gridConfirmed ? "" : "min-h-[calc(100vh-5rem)]"
+          }`}
+          data-workflow-section="divider-configuration"
+        >
+          <EqualGridInput
+            rows={rows}
+            columns={columns}
+            min={gridMinimum}
+            max={gridMaximum}
+            confirmed={gridConfirmed}
+            onRowsChange={onRowsChange}
+            onColumnsChange={onColumnsChange}
+            onConfirm={onGridConfirm}
+          />
+        </div>
       )}
 
       {customGridSelected && trayNumberConfirmed && (
-        <section className="rounded-xl border border-neutral-200 bg-neutral-50 p-6">
-          <h2 className="text-lg font-semibold text-neutral-900">
-            Custom layout selected
+        <div
+          className="scroll-mt-20"
+          data-workflow-section="custom-layout-configuration"
+        >
+          <h2 className="text-xl font-semibold tracking-tight text-neutral-900">
+            Custom layout configuration
           </h2>
 
-          <p className="mt-2 text-neutral-600">
-            The tray dimensions can be configured below. Manual guidance for
-            custom divider positions will be added separately.
+          <p className="mt-1 text-xs leading-4 text-neutral-500">
+            Divider positions are handled separately.
           </p>
-        </section>
+
+          <p
+            className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700"
+            role="status"
+          >
+            <span aria-hidden="true">✓</span>
+            Custom layout selected
+          </p>
+        </div>
       )}
 
       {gridConfirmed && equalGridSelected && trayNumberConfirmed && (
-        <section className="rounded-xl border border-neutral-200 bg-neutral-50 p-6">
-          <h2 className="text-lg font-semibold text-neutral-900">
-            Equal grid configured
-          </h2>
-
-          <p className="mt-2 text-neutral-600">
-            Each tray will contain {rows} rows and {columns} columns, creating{" "}
-            {rows * columns} equally sized compartments.
-          </p>
-        </section>
+        <p className="text-xs leading-4 text-neutral-500">
+          Equal grid configured: {rows} rows × {columns} columns ({rows * columns}{" "}
+          compartments per tray).
+        </p>
       )}
     </>
   );

@@ -7,14 +7,66 @@ type MakerWorldParameterPreviewProps = {
   parameters: MakerWorldParameters;
 };
 
+const MAKERWORLD_INPUT_ORDER = [
+  "boxWidth",
+  "boxDepth",
+  "lidHeight",
+  "trayHeight",
+  "trayNumber",
+  "dividerV1",
+  "dividerV2",
+  "dividerV3",
+  "dividerV4",
+  "dividerV5",
+  "dividerH1",
+  "dividerH2",
+  "dividerH3",
+  "toggleV1",
+  "toggleV2",
+  "toggleV3",
+  "toggleV4",
+  "toggleV5",
+  "toggleH1",
+  "toggleH2",
+  "toggleH3",
+] as const;
+
+function getOrderedParameters(parameters: MakerWorldParameters) {
+  const parametersByName = new Map(
+    parameters.groups.flatMap((group) => group.parameters).map((parameter) => [
+      parameter.name,
+      parameter,
+    ]),
+  );
+
+  return MAKERWORLD_INPUT_ORDER.map((name) => {
+    const parameter = parametersByName.get(name);
+
+    if (!parameter) {
+      throw new Error(`Missing MakerWorld input parameter: ${name}.`);
+    }
+
+    return parameter;
+  });
+}
+
+function ParameterHeadings() {
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-4 border-b border-neutral-200 bg-neutral-50 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-wide text-neutral-500">
+      <span>Parameter</span>
+      <span className="text-right">Value</span>
+    </div>
+  );
+}
+
 function ParameterRow({ parameter }: { parameter: MakerWorldParameter }) {
   return (
-    <div className="grid gap-2 border-b border-emerald-100 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-      <dt className="font-mono text-sm text-emerald-950">
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-neutral-100 bg-white px-3 py-1.5">
+      <dt className="min-w-0 font-mono text-sm text-neutral-800">
         {parameter.name}
       </dt>
 
-      <dd className="text-sm font-semibold tabular-nums text-emerald-950 sm:text-right">
+      <dd className="text-right text-sm font-medium tabular-nums text-neutral-950">
         {parameter.displayValue}
         {parameter.unit ? ` ${parameter.unit}` : ""}
       </dd>
@@ -25,54 +77,39 @@ function ParameterRow({ parameter }: { parameter: MakerWorldParameter }) {
 export default function MakerWorldParameterPreview({
   parameters,
 }: MakerWorldParameterPreviewProps) {
-  return (
-    <section className="space-y-6 border-t border-neutral-200 pt-12">
-      <header>
-        <p className="text-sm font-semibold uppercase tracking-widest text-emerald-700">
-          MakerWorld
-        </p>
+  const orderedParameters = getOrderedParameters(parameters);
 
-        <h2 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900">
-          MakerWorld Parameter Preview
+  return (
+    <section
+      className="scroll-mt-20 space-y-3 border-t border-neutral-200 pt-8"
+      data-workflow-section="makerworld-input"
+    >
+      <header>
+        <h2 className="text-xl font-semibold tracking-tight text-neutral-900">
+          MakerWorld Input
         </h2>
 
-        <p className="mt-3 max-w-2xl leading-7 text-neutral-600">
-          Enter these values into the Parametric Storage System model in
-          MakerWorld exactly as shown. Every value comes from the validated
-          Engineering Calculation Engine.
+        <p className="mt-1 max-w-2xl text-xs leading-4 text-neutral-500">
+          Enter these values into MakerWorld in the order shown.
         </p>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {parameters.groups.map((group) => (
-          <section
-            key={group.id}
-            className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-5"
-          >
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-emerald-800">
-              {group.title}
-            </h3>
+      <div className="overflow-hidden rounded-lg border border-neutral-300 bg-white">
+        <div className="md:hidden">
+          <ParameterHeadings />
+        </div>
 
-            <dl className="mt-3">
-              {group.parameters.map((parameter) => (
-                <ParameterRow key={parameter.name} parameter={parameter} />
-              ))}
-            </dl>
-          </section>
-        ))}
+        <div className="hidden grid-cols-2 gap-x-2 md:grid">
+          <ParameterHeadings />
+          <ParameterHeadings />
+        </div>
+
+        <dl className="grid md:grid-flow-col md:grid-cols-2 md:grid-rows-[repeat(11,minmax(0,auto))] md:gap-x-2">
+          {orderedParameters.map((parameter) => (
+            <ParameterRow key={parameter.name} parameter={parameter} />
+          ))}
+        </dl>
       </div>
-
-      {parameters.warnings.length > 0 && (
-        <section className="rounded-xl border border-amber-200 bg-amber-50 p-5">
-          <h3 className="font-semibold text-amber-950">Engineering notes</h3>
-
-          <ul className="mt-3 space-y-2 text-sm leading-6 text-amber-900">
-            {parameters.warnings.map((warning) => (
-              <li key={warning}>{warning}</li>
-            ))}
-          </ul>
-        </section>
-      )}
     </section>
   );
 }
